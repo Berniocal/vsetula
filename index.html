@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Myšlenky k evangeliu</title>
+<style>
+:root{
+  --bg:#f5f2eb; --paper:#fffdf9; --ink:#25211c; --muted:#756e64;
+  --line:#ddd5c8; --accent:#75562c; --soft:#f1e7d7; --soft2:#fbf6ed;
+  --shadow:0 10px 34px rgba(53,43,30,.07); --r:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+button{font:inherit;color:inherit}
+.app{max-width:1180px;margin:0 auto;padding:24px}
+header{margin:6px 0 20px}
+h1,h2,h3{font-family:Georgia,serif;font-weight:600}
+h1{font-size:clamp(31px,5vw,48px);margin:0 0 6px}
+header p{margin:0;color:var(--muted)}
+.topnav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.topnav button,.cycle-btn{
+  border:1px solid var(--line);background:transparent;border-radius:999px;padding:9px 15px;cursor:pointer
+}
+.topnav button.active,.cycle-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.view{display:none}.view.active{display:block}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+
+/* Bible tree */
+.bible-layout{display:grid;grid-template-columns:280px 1fr;gap:18px}
+.bible-nav{padding:16px}
+.bible-nav h2{font-size:20px;margin:0 0 12px}
+.book-list{display:grid;gap:8px}
+.book-row{border:1px solid var(--line);background:white;border-radius:13px;overflow:hidden}
+.book-btn{width:100%;text-align:left;border:0;background:white;padding:11px 12px;cursor:pointer;font-weight:700}
+.book-btn.active{background:var(--soft)}
+.chapters{display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:0 9px 10px}
+.chapters.open{display:grid}
+.chapter-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 2px;cursor:pointer;font-size:13px}
+.chapter-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.bible-main{padding:clamp(18px,4vw,32px)}
+.eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.bible-main h2{font-size:32px;margin:5px 0}
+.source-note{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 18px}
+.passage{border-top:1px solid var(--line);padding:18px 0 0;margin-top:18px}
+.passage:first-of-type{border-top:0;margin-top:0;padding-top:0}
+.passage-title{font-weight:800;margin-bottom:12px}
+.passage-thoughts{
+  border:1px solid #ddc9a7;background:var(--soft2);border-radius:15px;padding:14px 15px;margin:0 0 18px
+}
+.passage-thoughts strong{display:block;margin-bottom:9px}
+.thought-links{display:flex;flex-wrap:wrap;gap:8px}
+.thought-link{
+  border:1px solid #ccb387;background:#fff;border-radius:999px;padding:7px 11px;cursor:pointer;font-weight:700;font-size:13px
+}
+.thought-link.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.verse{display:grid;grid-template-columns:38px 1fr;gap:10px;border-top:1px solid #eee7dc;padding:11px 0}
+.verse:first-of-type{border-top:0}
+.vn{font:700 13px Georgia,serif;color:var(--accent);padding-top:4px}
+.vtext{font:20px/1.55 Georgia,serif}
+.verse-quote{
+  margin-top:9px;border-left:3px solid #c7a66f;background:#fff9ef;border-radius:0 12px 12px 0;
+  padding:10px 13px;font:16px/1.55 Georgia,serif
+}
+
+.verse-note-marker{
+  margin-top:8px;width:28px;height:28px;border-radius:50%;border:1px solid #d6bd91;
+  background:#fff9ef;color:var(--accent);cursor:pointer;font-weight:800;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center
+}
+.verse-note-marker:hover{background:var(--soft)}
+.verse-quote{display:none}
+.verse-quote.open{display:block}
+.passage-thought-expanded{
+  display:none;margin-top:12px;border:1px solid #ddc9a7;background:#fffaf2;
+  border-radius:14px;padding:15px 16px
+}
+.passage-thought-expanded.open{display:block}
+.passage-thought-expanded h4{margin:0 0 10px;font-size:16px}
+.passage-thought-expanded p{margin:0 0 10px;line-height:1.68}
+.passage-thought-expanded p:last-child{margin-bottom:0}
+
+.placeholder{text-align:center;color:var(--muted);padding:80px 20px;line-height:1.6}
+
+/* Archive */
+.archive-layout{display:grid;grid-template-columns:310px 1fr;gap:18px}
+.archive-side{padding:17px}
+.archive-main{padding:clamp(18px,4vw,32px);min-height:560px}
+.archive-side h2{font-size:21px;margin:0 0 12px}
+.cycles{display:flex;gap:7px;margin-bottom:18px}
+.cycle-btn{padding:7px 13px}
+.sunday-list{display:grid;gap:9px}
+.sunday-item{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px;cursor:pointer}
+.sunday-item.active{background:var(--soft);border-color:#c9ae82}
+.sunday-item strong{display:block}
+.sunday-item span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+.empty-cycle{color:var(--muted);font-size:14px;line-height:1.5;padding:8px 2px}
+.sunday-head{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:3px}
+.sunday-head h2{font-size:32px;margin:5px 0}
+.sunday-meta{color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;font-size:14px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:5px 9px;background:#fff}
+.transcript-section{padding:22px 0;border-top:1px solid var(--line)}
+.transcript-section:first-of-type{border-top:0}
+.transcript-section h3{font-size:23px;margin:0 0 12px}
+.transcript-section p{font-size:16px;line-height:1.75;margin:0 0 12px}
+.transcript-section p:last-child{margin-bottom:0}
+.timecode{font-size:12px;color:var(--accent);font-weight:700;margin-bottom:8px}
+.editorial{margin-top:18px;padding:12px 14px;background:#faf6ef;border:1px solid #e4dbcd;border-radius:13px;color:var(--muted);font-size:12px;line-height:1.55}
+footer{text-align:center;color:var(--muted);font-size:12px;margin:24px 0 8px}
+
+/* Compact Bible text */
+.passage{padding-top:15px;margin-top:15px}
+.passage-title{margin-bottom:9px}
+.verse-flow{
+  font-family:Georgia,serif;
+  font-size:16px;
+  line-height:1.72;
+  color:var(--ink);
+}
+.verse-inline{display:inline}
+.verse-inline + .verse-inline{margin-left:.18em}
+.verse-number{
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:.68em;
+  line-height:0;
+  vertical-align:super;
+  color:var(--accent);
+  font-weight:800;
+  margin-right:.28em;
+}
+.verse-note-marker{
+  display:inline;
+  width:auto;height:auto;
+  margin:0 0 0 .18em;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--accent);
+  font-size:.82em;
+  line-height:1;
+  vertical-align:baseline;
+  cursor:pointer;
+  font-weight:800;
+}
+.verse-note-marker:hover{background:transparent;opacity:.7}
+.verse-quote{
+  display:none;
+  margin:9px 0 12px;
+  border-left:3px solid #c7a66f;
+  background:#fff9ef;
+  border-radius:0 12px 12px 0;
+  padding:10px 13px;
+  font:16px/1.55 Georgia,serif;
+}
+.verse-quote.open{display:block}
+.chapter-nav{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:28px;
+  padding-top:18px;
+  border-top:1px solid var(--line);
+}
+.chapter-nav button{
+  border:1px solid var(--line);
+  background:var(--paper);
+  color:var(--ink);
+  border-radius:12px;
+  padding:10px 14px;
+  cursor:pointer;
+  font-weight:700;
+}
+.chapter-nav button:hover{background:var(--soft)}
+.chapter-nav button:disabled{opacity:.35;cursor:default}
+.theme-toggle{
+  margin-left:auto;
+  border:1px solid var(--line);
+  background:var(--paper);
+  color:var(--ink);
+  border-radius:999px;
+  padding:9px 14px;
+  cursor:pointer;
+}
+
+/* Dark mode */
+body.dark{
+  --bg:#161513;
+  --paper:#211f1c;
+  --ink:#eee9df;
+  --muted:#aaa398;
+  --line:#3c3832;
+  --accent:#d3aa70;
+  --soft:#30291f;
+  --soft2:#29251f;
+  --shadow:0 10px 34px rgba(0,0,0,.22);
+}
+body.dark .card,
+body.dark .book-row,
+body.dark .book-btn,
+body.dark .chapter-btn,
+body.dark .sunday-item,
+body.dark .pill,
+body.dark .thought-link,
+body.dark .cycle-btn,
+body.dark .topnav button,
+body.dark .chapter-nav button,
+body.dark .theme-toggle,
+body.dark .video-tools input,
+body.dark .video-tools button{
+  background:var(--paper);
+  color:var(--ink);
+  border-color:var(--line);
+}
+body.dark .book-btn.active,
+body.dark .sunday-item.active{background:var(--soft)}
+body.dark .chapter-btn.active,
+body.dark .cycle-btn.active,
+body.dark .topnav button.active,
+body.dark .thought-link.active{
+  background:var(--ink);
+  color:#161513;
+  border-color:var(--ink);
+}
+body.dark .passage-thoughts,
+body.dark .passage-thought-expanded,
+body.dark .verse-quote{
+  background:#28231c;
+  border-color:#5a4934;
+}
+body.dark .editorial,
+body.dark .video-panel{background:#1d1b18}
+body.dark .video-wrap{background:#111}
+
+
+.video-panel{margin:20px 0 6px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbf8f2}
+.video-panel h3{margin:0 0 12px;font-size:20px}
+.video-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#ede8df;border-radius:13px;overflow:hidden}
+.video-wrap iframe{width:100%;height:100%;border:0;display:block}
+.video-missing{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);line-height:1.5}
+.video-tools{display:flex;gap:8px;margin-top:10px}
+.video-tools input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:white}
+.video-tools button{border:1px solid var(--line);border-radius:10px;background:white;padding:9px 12px;cursor:pointer;font-weight:700}
+.video-help{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
+
+
+@media(max-width:820px){
+  .app{padding:13px}
+  .bible-layout,.archive-layout{grid-template-columns:1fr}
+  .verse-flow{font-size:16px;line-height:1.68}
+  .chapter-nav button{flex:1;padding:10px 8px}
+  .chapters{grid-template-columns:repeat(7,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <h1>Myšlenky k evangeliu</h1>
+  <p>Evangelia propojená s vyčištěnými přepisy jednotlivých neděl.</p>
+</header>
+
+<nav class="topnav">
+  <button class="active" data-view="gospelView">Evangelia</button>
+  <button data-view="archiveView">Myšlenky k evangeliu</button>
+  <button class="theme-toggle" id="themeToggle" type="button">☾ Tmavý režim</button>
+</nav>
+
+<section id="gospelView" class="view active">
+  <div class="bible-layout">
+    <aside class="card bible-nav">
+      <h2>Evangelia</h2>
+      <div id="bookList" class="book-list"></div>
+    </aside>
+    <main class="card bible-main" id="bibleMain"></main>
+  </div>
+</section>
+
+<section id="archiveView" class="view">
+  <div class="archive-layout">
+    <aside class="card archive-side">
+      <h2>Myšlenky k evangeliu</h2>
+      <div class="cycles">
+        <button class="cycle-btn active" data-cycle="A">Cyklus A</button>
+        <button class="cycle-btn" data-cycle="B">Cyklus B</button>
+        <button class="cycle-btn" data-cycle="C">Cyklus C</button>
+      </div>
+      <div id="sundayList" class="sunday-list"></div>
+    </aside>
+    <main class="card archive-main" id="archiveMain"></main>
+  </div>
+</section>
+
+<footer>Pracovní prototyp · modernizované znění podle Bible kralické.</footer>
+</div>
+
+<script>
+const BOOKS = {
+  MAT:{name:"Matouš", short:"Mt", chapters:28},
+  MRK:{name:"Marek", short:"Mk", chapters:16},
+  LUK:{name:"Lukáš", short:"Lk", chapters:24},
+  JHN:{name:"Jan", short:"Jan", chapters:21}
+};
+
+const THOUGHTS = {
+  thought1:{
+    title:"Myšlenka první",
+    time:"00:22–01:16",
+    paragraphs:[
+      "Někdy jsou chvíle, kdy si v tichu položíš docela surovou otázku: Stálo mi to za to? Třeba mlčet, když by bylo jednodušší něco říct nebo si ulevit; zůstat, když jiní odešli; nebo nést něco, co se zdá být nad moje síly.",
+      "A do toho Ježíš řekne větu, která zní skoro necitlivě: „Radujte se a jásejte, protože máte v nebi velkou odměnu.“ Neříká: „Bude to spravedlivé“ nebo „Pochopí tě“, ale: „Neztratí se to.“",
+      "Radost tady není pocit. Je to odmítnutí přijmout logiku světa, že když něco bolí, tak to bylo špatně. Ne každá bolest je prohra. Některé bolesti jsou důkazem, že jsi nezradil sám sebe."
+    ]
+  },
+  thought2:{
+    title:"Myšlenka druhá",
+    time:"01:18–02:45",
+    paragraphs:[
+      "Blahoslavenství většinou čteme tak, že se v nich mají poznat lidé, kterým je těžko: ti, co pláčou, nemají sílu nebo něco nezvládli. Jenže velká část našeho života taková není. Většinu času prostě žijeme. Ráno vstaneme, jdeme do práce, řešíme běžné věci a večer jsme unavení. Není to euforie, ale život obvykle není katastrofa a jsme relativně v klidu.",
+      "A právě tehdy se zdá, že blahoslavenství mluví o někom jiném. Ježíš tady ale nepopisuje extrémní stavy. Popisuje to, co se s člověkem postupně začne dít, když je Bohu blízko.",
+      "Najednou tě víc rozhodí nespravedlnost, i když se tě přímo netýká. Když jsi Bohu blíž, už nedokážeš přejít cizí bolest mávnutím ruky. Všimneš si věcí, které bys dřív označil za něco, co není tvoje starost. A klid, který ti byl dřív příjemný, ti začne připadat podezřele laciný.",
+      "Není to proto, že bys byl slabší. Je to proto, že jsi pozornější. Blahoslavenství nejsou vstupní podmínky víry. Jsou to stopy, podle kterých poznáš, že jdeš Bohu naproti."
+    ]
+  },
+  thought3:{
+    title:"Myšlenka třetí",
+    time:"02:45–04:05",
+    paragraphs:[
+      "Když se modlíme, většinou chceme, aby byl klid, aby se věci srovnaly a aby to moc nebolelo. Chceme mít pokoj v hlavě, ve vztazích i v životě. To je pochopitelné.",
+      "Ježíš tady ale neslibuje pohodový život. Mluví o životě, který je pravdivý. Říká: „Blahoslaveni plačící“ a „blahoslaveni pronásledovaní“. To nejsou stavy, které by si někdo přál.",
+      "Jsou to chvíle, kdy si musíme ujasnit jednu důležitou věc: jestli si člověk hlavně pohlídá, aby měl klid, nebo jestli zůstane poctivý k sobě i k druhým.",
+      "Někdy je jednodušší mlčet. Někdy je jednodušší ustoupit. Někdy je jednodušší dělat, že se nic neděje. Blahoslavenství nejsou útěcha před bolestí. Potichu připomínají, že klid za každou cenu není totéž co dobrý život.",
+      "Víra, která tě nikdy nezraní, tě taky nikdy nezmění."
+    ]
+  }
+};
+
+const SUNDAYS = {
+  A:[{
+    id:"A-04-ordinary-2026",
+    title:"4. neděle v mezidobí",
+    date:"1. 2. 2026",
+    gospel:"Mt 5,1–12",
+    intro:"Máme před sebou čtvrtou neděli v mezidobí. Pojďme na evangelium této neděle. Je to známé evangelium o blahoslavenství, Matoušova pátá kapitola.",
+    thoughtIds:["thought1","thought2","thought3"],
+    conclusion:"Tenhle úryvek není úplně jednoduchý. Často se do něj vkrádají klišé. Myslím, že nás vede hlouběji do toho, co znamená život s Kristem a opravdové srdce učedníků.",
+    videoEmbed:"https://youtu.be/9lovWV1zMtI?is=Mj6sGVcyEP1zyPWa"
+  }],
+  B:[],
+  C:[]
+};
+
+const MATTHEW_SECTIONS = {"1":[{"title":"Rodokmen Ježíše Krista","range":"Mt 1,1–17","thoughts":[],"verses":[[1,"Rodokmen Ježíše Krista, syna Davidova, syna Abrahamova."],[2,"Abraham byl otcem Izáka, Izák Jákoba, Jákob Judy a jeho bratrů."],[3,"Juda byl s Támar otcem Fárese a Záry. Fáres byl otcem Ezroma a Ezrom Arama."],[4,"Aram byl otcem Aminadaba, Aminadab Názona a Názon Salmona."],[5,"Salmon byl s Rachab otcem Bóza, Bóz byl s Rut otcem Obéda a Obéd Jesseho."],[6,"Jesse byl otcem krále Davida. David byl s ženou, která dříve patřila Uriášovi, otcem Šalomouna."],[7,"Šalomoun byl otcem Roboáma, Roboám Abiáše a Abiáš Azy."],[8,"Aza byl otcem Jozafata, Jozafat Joráma a Jorám Oziáše."],[9,"Oziáš byl otcem Joátama, Joátam Achasa a Achas Ezechiáše."],[10,"Ezechiáš byl otcem Manassesa, Manasses Amona a Amon Joziáše."],[11,"Joziáš byl otcem Jekoniáše a jeho bratrů v době babylonského zajetí."],[12,"Po babylonském zajetí byl Jekoniáš otcem Salatiela a Salatiel Zorobábela."],[13,"Zorobábel byl otcem Abiuda, Abiud Eliakima a Eliakim Azora."],[14,"Azor byl otcem Sádocha, Sádoch Achima a Achim Eliuda."],[15,"Eliud byl otcem Eleazara, Eleazar Mátana a Mátan Jákoba."],[16,"Jákob byl otcem Josefa, muže Marie, z níž se narodil Ježíš, nazývaný Kristus."],[17,"Od Abrahama po Davida tedy bylo čtrnáct pokolení, od Davida po babylonské zajetí čtrnáct pokolení a od babylonského zajetí po Krista čtrnáct pokolení."]]},{"title":"Narození Ježíše Krista","range":"Mt 1,18–25","thoughts":[],"verses":[[18,"Narození Ježíše Krista se událo takto: Jeho matka Marie byla zasnoubena Josefovi. Dříve než spolu začali žít, ukázalo se, že čeká dítě z Ducha svatého."],[19,"Její muž Josef byl spravedlivý a nechtěl ji veřejně zostudit, proto se rozhodl propustit ji potají."],[20,"Když o tom přemýšlel, ukázal se mu ve snu Pánův anděl a řekl: „Josefe, synu Davidův, neboj se přijmout Marii za svou manželku. To, co se v ní počalo, je z Ducha svatého.“"],[21,"„Porodí syna a dáš mu jméno Ježíš, protože on zachrání svůj lid od jeho hříchů.“"],[22,"To všechno se stalo, aby se naplnilo, co Pán řekl skrze proroka:"],[23,"„Hle, panna počne a porodí syna a dají mu jméno Emmanuel,“ což znamená: Bůh s námi."],[24,"Když se Josef probudil, udělal, jak mu Pánův anděl přikázal, a přijal Marii za svou manželku."],[25,"Neměl s ní manželský styk, dokud neporodila syna. A dal mu jméno Ježíš."]]}],"2":[{"title":"Mudrci od východu","range":"Mt 2,1–12","thoughts":[],"verses":[[1,"Když se Ježíš narodil v judském Betlémě za vlády krále Heroda, přišli do Jeruzaléma mudrci od východu."],[2,"Ptali se: „Kde je ten narozený král Židů? Viděli jsme na východě jeho hvězdu a přišli jsme se mu poklonit.“"],[3,"Když to král Herodes uslyšel, znepokojil se a s ním celý Jeruzalém."],[4,"Svolal všechny přední kněze a učitele Zákona a vyptával se jich, kde se má Kristus narodit."],[5,"Odpověděli mu: „V judském Betlémě, protože tak je napsáno skrze proroka:"],[6,"Ty, Betléme v judské zemi, nejsi vůbec nejmenší mezi judskými městy, protože z tebe vyjde vládce, který bude pást můj izraelský lid.“"],[7,"Herodes si potom tajně zavolal mudrce a přesně se jich vyptal, kdy se jim hvězda ukázala."],[8,"Poslal je do Betléma se slovy: „Jděte a důkladně se vyptávejte na to dítě. Až je najdete, dejte mi vědět, abych se mu i já mohl přijít poklonit.“"],[9,"Když vyslechli krále, vydali se na cestu. A hvězda, kterou viděli na východě, šla před nimi, až se zastavila nad místem, kde bylo dítě."],[10,"Když hvězdu uviděli, naplnila je veliká radost."],[11,"Vešli do domu, uviděli dítě s jeho matkou Marií, padli na zem a klaněli se mu. Potom otevřeli své poklady a dali mu dary: zlato, kadidlo a myrhu."],[12,"Ve snu dostali od Boha varování, aby se nevraceli k Herodovi, a proto se do své země vrátili jinou cestou."]]},{"title":"Útěk do Egypta","range":"Mt 2,13–15","thoughts":[],"verses":[[13,"Když mudrci odešli, ukázal se Josefovi ve snu Pánův anděl a řekl: „Vstaň, vezmi dítě i jeho matku a uteč do Egypta. Zůstaň tam, dokud ti neřeknu, protože Herodes bude dítě hledat, aby je zabil.“"],[14,"Josef tedy vstal, ještě v noci vzal dítě i jeho matku a odešel do Egypta."],[15,"Zůstal tam až do Herodovy smrti. Tak se naplnilo, co Pán řekl skrze proroka: „Z Egypta jsem povolal svého Syna.“"]]},{"title":"Zabití betlémských dětí","range":"Mt 2,16–18","thoughts":[],"verses":[[16,"Když Herodes poznal, že ho mudrci oklamali, velmi se rozhněval. Nechal v Betlémě a jeho okolí zabít všechny chlapce ve věku do dvou let podle doby, na kterou se mudrců vyptal."],[17,"Tehdy se naplnilo, co bylo řečeno skrze proroka Jeremiáše:"],[18,"„V Rámě je slyšet hlas, nářek, pláč a veliké bědování. Ráchel pláče nad svými dětmi a nedá se potěšit, protože už nejsou.“"]]},{"title":"Návrat z Egypta","range":"Mt 2,19–23","thoughts":[],"verses":[[19,"Když Herodes zemřel, ukázal se Josefovi v Egyptě ve snu Pánův anděl."],[20,"Řekl mu: „Vstaň, vezmi dítě i jeho matku a jdi do izraelské země. Ti, kdo usilovali dítěti o život, už zemřeli.“"],[21,"Josef tedy vstal, vzal dítě i jeho matku a vrátil se do izraelské země."],[22,"Když však uslyšel, že v Judsku místo svého otce Heroda vládne Archelaos, bál se tam jít. Ve snu dostal od Boha pokyn a odebral se do Galileje."],[23,"Usadil se ve městě zvaném Nazaret. Tak se naplnilo, co bylo řečeno skrze proroky: „Bude nazván Nazaretský.“"]]}],"3":[{"title":"Jan Křtitel","range":"Mt 3,1–12","thoughts":[],"verses":[[1,"V těch dnech přišel Jan Křtitel a kázal v judské poušti."],[2,"Říkal: „Čiňte pokání, protože se přiblížilo nebeské království.“"],[3,"To je ten, o němž mluvil prorok Izaiáš: „Hlas volajícího na poušti: Připravte Pánovu cestu, narovnejte jeho stezky.“"],[4,"Jan nosil oděv z velbloudí srsti a kolem pasu kožený pás. Živil se kobylkami a lesním medem."],[5,"Přicházeli k němu lidé z Jeruzaléma, z celého Judska i z celého okolí Jordánu."],[6,"Vyznávali své hříchy a on je křtil v řece Jordánu."],[7,"Když viděl, že k jeho křtu přichází mnoho farizeů a saduceů, řekl jim: „Plemeno zmijí! Kdo vám ukázal, jak uniknout přicházejícímu hněvu?“"],[8,"„Neste tedy ovoce, které odpovídá pokání.“"],[9,"„A neříkejte si: Naším otcem je Abraham. Říkám vám, že Bůh může Abrahamovi vzbudit děti i z těchto kamenů.“"],[10,"„Sekera už leží u kořene stromů. Každý strom, který nenese dobré ovoce, bude vyťat a hozen do ohně.“"],[11,"„Já vás křtím vodou k pokání. Ten, kdo přichází po mně, je však mocnější než já; nejsem hoden ani nosit jeho obuv. On vás bude křtít Duchem svatým a ohněm.“"],[12,"„V ruce má lopatu, vyčistí svůj mlat, pšenici shromáždí do sýpky, ale plevy spálí neuhasitelným ohněm.“"]]},{"title":"Ježíšův křest","range":"Mt 3,13–17","thoughts":[],"verses":[[13,"Tehdy přišel Ježíš z Galileje k Jordánu za Janem, aby se od něho dal pokřtít."],[14,"Jan mu v tom bránil a říkal: „Já potřebuji být pokřtěn od tebe, a ty přicházíš ke mně?“"],[15,"Ježíš mu odpověděl: „Teď to nech tak. Takto se sluší naplnit všechnu spravedlnost.“ Jan mu tedy vyhověl."],[16,"Když byl Ježíš pokřtěn, hned vystoupil z vody. Otevřela se mu nebesa a uviděl Božího Ducha, jak sestupuje jako holubice a přichází na něj."],[17,"A z nebe zazněl hlas: „Toto je můj milovaný Syn, v němž mám zalíbení.“"]]}],"4":[{"title":"Pokušení na poušti","range":"Mt 4,1–11","thoughts":[],"verses":[[1,"Potom byl Ježíš Duchem veden na poušť, aby byl pokoušen ďáblem."],[2,"Postil se čtyřicet dní a čtyřicet nocí a potom dostal hlad."],[3,"Přišel k němu pokušitel a řekl: „Jsi-li Boží Syn, řekni, ať se z těchto kamenů stanou chleby.“"],[4,"Ježíš odpověděl: „Je napsáno: Člověk nebude žít jen chlebem, ale každým slovem, které vychází z Božích úst.“"],[5,"Potom ho ďábel vzal do svatého města a postavil ho na vrchol chrámu."],[6,"Řekl mu: „Jsi-li Boží Syn, vrhni se dolů. Vždyť je napsáno: Svým andělům o tobě přikáže a oni tě vezmou na ruce, abys nenarazil nohou o kámen.“"],[7,"Ježíš mu odpověděl: „Také je napsáno: Nebudeš pokoušet Pána, svého Boha.“"],[8,"Potom ho ďábel vzal na velmi vysokou horu a ukázal mu všechna království světa a jejich slávu."],[9,"Řekl mu: „To všechno ti dám, jestliže padneš na zem a pokloníš se mi.“"],[10,"Ježíš mu řekl: „Odejdi, satane! Je napsáno: Pánu, svému Bohu, se budeš klanět a jemu jedinému budeš sloužit.“"],[11,"Tehdy ho ďábel opustil a přišli andělé a sloužili mu."]]},{"title":"Začátek Ježíšova působení v Galileji","range":"Mt 4,12–17","thoughts":[],"verses":[[12,"Když Ježíš uslyšel, že byl Jan uvězněn, odešel do Galileje."],[13,"Opustil Nazaret a usadil se v Kafarnaum u jezera, na území Zabulona a Neftalíma,"],[14,"aby se naplnilo, co bylo řečeno skrze proroka Izaiáše:"],[15,"„Země Zabulon a země Neftalím, cesta k moři, za Jordánem, Galilea pohanů —"],[16,"lid, který seděl v temnotě, uviděl veliké světlo; těm, kdo seděli v krajině a stínu smrti, vzešlo světlo.“"],[17,"Od té doby začal Ježíš kázat: „Čiňte pokání, protože se přiblížilo nebeské království.“"]]},{"title":"Povolání prvních učedníků","range":"Mt 4,18–22","thoughts":[],"verses":[[18,"Když Ježíš procházel podél Galilejského jezera, uviděl dva bratry: Šimona zvaného Petr a jeho bratra Ondřeje. Vrhali síť do jezera, protože byli rybáři."],[19,"Řekl jim: „Pojďte za mnou a udělám z vás rybáře lidí.“"],[20,"Oni hned nechali sítě a šli za ním."],[21,"Když šel dál, uviděl jiné dva bratry, Jakuba, syna Zebedeova, a jeho bratra Jana. Byli na lodi se svým otcem Zebedeem a spravovali sítě. Ježíš je zavolal."],[22,"Oni hned opustili loď i svého otce a šli za ním."]]},{"title":"Ježíš učí a uzdravuje","range":"Mt 4,23–25","thoughts":[],"verses":[[23,"Ježíš procházel celou Galilejí, učil v jejich synagogách, hlásal evangelium o království a uzdravoval mezi lidmi každou nemoc a každý neduh."],[24,"Zpráva o něm se rozšířila po celé Sýrii. Přiváděli k němu všechny nemocné, lidi sužované různými nemocemi a bolestmi, posedlé, náměsíčné i ochrnuté, a on je uzdravoval."],[25,"Šly za ním veliké zástupy z Galileje, Desetiměstí, Jeruzaléma, Judska i ze Zajordání."]]}]};
+MATTHEW_SECTIONS[5] = [
+  {
+    title:"Blahoslavenství",
+    range:"Mt 5,1–12",
+    thoughts:["thought1","thought2","thought3"],
+    verses:[
+      [1,"Když Ježíš uviděl zástupy, vystoupil na horu. Posadil se a jeho učedníci přišli k němu."],
+      [2,"Začal je učit těmito slovy:"],
+      [3,"Blaze chudým v duchu, protože jim patří nebeské království."],
+      [4,"Blaze těm, kdo pláčou, protože budou potěšeni."],
+      [5,"Blaze mírným, protože dostanou zemi za dědictví."],
+      [6,"Blaze těm, kdo hladovějí a žízní po spravedlnosti, protože budou nasyceni."],
+      [7,"Blaze milosrdným, protože dojdou milosrdenství."],
+      [8,"Blaze těm, kdo mají čisté srdce, protože uvidí Boha."],
+      [9,"Blaze těm, kdo působí pokoj, protože budou nazváni Božími syny."],
+      [10,"Blaze těm, kdo jsou pronásledováni pro spravedlnost, protože jim patří nebeské království."],
+      [11,"Blaze vám, když vás budou kvůli mně urážet, pronásledovat a lživě o vás říkat všechno zlé."],
+      [12,"Radujte se a jásejte, protože v nebi máte velikou odměnu. Stejně pronásledovali i proroky, kteří byli před vámi."]
+    ]
+  },
+  {
+    title:"Sůl země a světlo světa",
+    range:"Mt 5,13–16",
+    thoughts:[],
+    verses:[
+      [13,"Vy jste sůl země. Když však sůl ztratí svou slanost, čím bude znovu osolena? Už se k ničemu nehodí, než aby byla vyhozena ven a lidé po ní šlapali."],
+      [14,"Vy jste světlo světa. Město ležící na hoře nemůže zůstat skryté."],
+      [15,"Ani lampu nerozsvěcují proto, aby ji postavili pod nádobu, ale na svícen; a tak svítí všem v domě."],
+      [16,"Tak ať vaše světlo svítí před lidmi, aby viděli vaše dobré skutky a oslavovali vašeho Otce, který je v nebesích."]
+    ]
+  },
+  {
+    title:"Ježíš a Zákon",
+    range:"Mt 5,17–20",
+    thoughts:[],
+    verses:[
+      [17,"Nemyslete si, že jsem přišel zrušit Zákon nebo Proroky. Nepřišel jsem je zrušit, ale naplnit."],
+      [18,"Amen, říkám vám: Dokud nepomine nebe a země, nepomine ze Zákona ani jediné písmeno ani jediná čárka, dokud se všechno nestane."],
+      [19,"Kdo by tedy zrušil jedno z těchto nejmenších přikázání a učil tomu i ostatní, bude v nebeském království nazván nejmenším. Kdo je však bude zachovávat a učit, bude v nebeském království nazván velikým."],
+      [20,"Říkám vám totiž: Nebude-li vaše spravedlnost větší než spravedlnost zákoníků a farizeů, do nebeského království nevejdete."]
+    ]
+  },
+  {
+    title:"Hněv a smíření",
+    range:"Mt 5,21–26",
+    thoughts:[],
+    verses:[
+      [21,"Slyšeli jste, že bylo řečeno předkům: Nezabiješ. Kdo zabije, bude vydán soudu."],
+      [22,"Já vám však říkám: Každý, kdo se bez příčiny hněvá na svého bratra, bude vydán soudu. Kdo svému bratru řekne: „Rácha!“, bude vydán radě, a kdo řekne: „Blázne!“, propadne ohnivému peklu."],
+      [23,"Když tedy přinášíš svůj dar k oltáři a tam si vzpomeneš, že tvůj bratr má něco proti tobě,"],
+      [24,"nech svůj dar před oltářem a jdi se nejprve smířit se svým bratrem. Potom přijď a přines svůj dar."],
+      [25,"Dohodni se se svým protivníkem rychle, dokud jsi s ním ještě na cestě, aby tě nevydal soudci, soudce služebníkovi a ty abys nebyl uvržen do vězení."],
+      [26,"Amen, říkám ti: Nevyjdeš odtud, dokud nezaplatíš do posledního haléře."]
+    ]
+  },
+  {
+    title:"Cizoložství",
+    range:"Mt 5,27–30",
+    thoughts:[],
+    verses:[
+      [27,"Slyšeli jste, že bylo řečeno: Nezcizoložíš."],
+      [28,"Já vám však říkám: Každý, kdo se dívá na ženu s žádostí po ní, už s ní ve svém srdci zcizoložil."],
+      [29,"Jestliže tě tedy svádí k hříchu tvé pravé oko, vyloupni je a odhoď od sebe. Je pro tebe lepší, aby zahynula jedna část tvého těla, než aby celé tvé tělo bylo uvrženo do pekla."],
+      [30,"A jestliže tě svádí k hříchu tvá pravá ruka, usekni ji a odhoď od sebe. Je pro tebe lepší, aby zahynula jedna část tvého těla, než aby celé tvé tělo bylo uvrženo do pekla."]
+    ]
+  },
+  {
+    title:"Rozvod",
+    range:"Mt 5,31–32",
+    thoughts:[],
+    verses:[
+      [31,"Také bylo řečeno: Kdo propustí svou manželku, ať jí dá rozlukový list."],
+      [32,"Já vám však říkám: Kdo propustí svou manželku z jiného důvodu než pro cizoložství, vystavuje ji cizoložství; a kdo si vezme propuštěnou, cizoloží."]
+    ]
+  },
+  {
+    title:"Přísahy",
+    range:"Mt 5,33–37",
+    thoughts:[],
+    verses:[
+      [33,"Dále jste slyšeli, že bylo řečeno předkům: Nebudeš křivě přísahat, ale své přísahy dané Pánu splníš."],
+      [34,"Já vám však říkám: Nepřísahejte vůbec — ani při nebi, protože je Božím trůnem,"],
+      [35,"ani při zemi, protože je podnoží jeho nohou, ani při Jeruzalému, protože je městem velikého Krále."],
+      [36,"Nepřísahej ani při své hlavě, protože nemůžeš jediný vlas učinit bílým nebo černým."],
+      [37,"Vaše řeč ať je: Ano, ano; ne, ne. Co je nad to, pochází ze zlého."]
+    ]
+  },
+  {
+    title:"Odplata",
+    range:"Mt 5,38–42",
+    thoughts:[],
+    verses:[
+      [38,"Slyšeli jste, že bylo řečeno: Oko za oko a zub za zub."],
+      [39,"Já vám však říkám: Neodporujte zlému. Když tě někdo udeří do pravé tváře, nastav mu i druhou."],
+      [40,"A tomu, kdo se s tebou chce soudit a vzít ti košili, nech i plášť."],
+      [41,"Když tě někdo nutí jít jednu míli, jdi s ním dvě."],
+      [42,"Tomu, kdo tě prosí, dej, a k tomu, kdo si od tebe chce půjčit, se neobracej zády."]
+    ]
+  },
+  {
+    title:"Láska k nepřátelům",
+    range:"Mt 5,43–48",
+    thoughts:[],
+    verses:[
+      [43,"Slyšeli jste, že bylo řečeno: Miluj svého bližního a nenáviď svého nepřítele."],
+      [44,"Já vám však říkám: Milujte své nepřátele, žehnejte těm, kdo vás proklínají, dělejte dobře těm, kdo vás nenávidí, a modlete se za ty, kdo vás utiskují a pronásledují."],
+      [45,"Tak budete syny svého Otce, který je v nebesích. On dává svému slunci vycházet nad dobrými i zlými a sesílá déšť na spravedlivé i nespravedlivé."],
+      [46,"Jestliže totiž milujete jen ty, kdo milují vás, jakou máte odměnu? Nedělají totéž i celníci?"],
+      [47,"A zdravíte-li jen své bratry, co děláte zvláštního? Nedělají totéž i celníci?"],
+      [48,"Buďte tedy dokonalí, jako je dokonalý váš nebeský Otec."]
+    ]
+  }
+];
+MATTHEW_SECTIONS[6] = [{"title":"Skrytá zbožnost","range":"Mt 6,1–4","thoughts":[],"verses":[[1,"Dávejte si pozor, abyste své dobré skutky nekonali před lidmi jen proto, aby vás viděli. Jinak nemáte odměnu u svého Otce v nebesích."],[2,"Když tedy dáváš almužnu, nevytrubuj to před sebou jako pokrytci v synagogách a na ulicích, aby je lidé chválili. Amen, říkám vám: Ti už svou odměnu dostali."],[3,"Když dáváš almužnu, ať tvá levá ruka neví, co dělá pravá,"],[4,"aby tvá almužna zůstala skrytá. A tvůj Otec, který vidí i to, co je skryté, ti odplatí."]]},{"title":"O modlitbě","range":"Mt 6,5–8","thoughts":[],"verses":[[5,"Když se modlíš, nebuď jako pokrytci. Ti se rádi modlí v synagogách a na rozích ulic, aby je lidé viděli. Amen, říkám vám: Ti už svou odměnu dostali."],[6,"Když se však modlíš ty, vejdi do svého pokoje, zavři dveře a modli se ke svému Otci, který je ve skrytosti. A tvůj Otec, který vidí i to, co je skryté, ti odplatí."],[7,"Když se modlíte, nehromaďte prázdná slova jako pohané. Ti si myslí, že budou vyslyšeni pro množství svých slov."],[8,"Nebojte se jim podobat. Váš Otec ví, co potřebujete, ještě dříve, než ho o to požádáte."]]},{"title":"Otče náš","range":"Mt 6,9–15","thoughts":[],"verses":[[9,"Vy se tedy modlete takto: Otče náš, který jsi v nebesích, ať je posvěceno tvé jméno."],[10,"Ať přijde tvé království. Ať se děje tvá vůle jako v nebi, tak i na zemi."],[11,"Dej nám dnes náš každodenní chléb."],[12,"A odpusť nám naše viny, jako i my odpouštíme těm, kdo se provinili proti nám."],[13,"A neuveď nás do pokušení, ale vysvoboď nás od zlého. Vždyť tvé je království, moc i sláva navěky. Amen."],[14,"Jestliže totiž odpustíte lidem jejich provinění, odpustí i vám váš nebeský Otec."],[15,"Jestliže však lidem neodpustíte, ani váš Otec vám neodpustí vaše provinění."]]},{"title":"O postu","range":"Mt 6,16–18","thoughts":[],"verses":[[16,"Když se postíte, netvařte se zachmuřeně jako pokrytci. Ti dávají najevo svůj půst svým vzhledem, aby lidé viděli, že se postí. Amen, říkám vám: Ti už svou odměnu dostali."],[17,"Když se postíš ty, uprav si hlavu a umyj si tvář,"],[18,"aby nebylo lidem zjevné, že se postíš, ale jen tvému Otci, který je ve skrytosti. A tvůj Otec, který vidí i to, co je skryté, ti odplatí."]]},{"title":"Poklad v nebi","range":"Mt 6,19–24","thoughts":[],"verses":[[19,"Neshromažďujte si poklady na zemi, kde je ničí mol a rez a kde se zloději vloupávají a kradou."],[20,"Shromažďujte si však poklady v nebi, kde je mol ani rez neničí a kde se zloději nevloupávají ani nekradou."],[21,"Protože kde je tvůj poklad, tam bude i tvé srdce."],[22,"Lampou těla je oko. Je-li tedy tvé oko čisté, celé tvé tělo bude ve světle."],[23,"Je-li však tvé oko špatné, celé tvé tělo bude ve tmě. Jestliže je tedy světlo, které je v tobě, tmou, jak veliká ta tma bude!"],[24,"Nikdo nemůže sloužit dvěma pánům. Jednoho totiž bude nenávidět a druhého milovat, nebo se jednoho bude držet a druhým pohrdne. Nemůžete sloužit Bohu i majetku."]]},{"title":"Nestarejte se úzkostlivě o zítřek","range":"Mt 6,25–34","thoughts":[],"verses":[[25,"Proto vám říkám: Nedělejte si úzkostlivé starosti o svůj život, co budete jíst a pít, ani o své tělo, co si obléknete. Není život víc než jídlo a tělo víc než oděv?"],[26,"Podívejte se na nebeské ptáky: nesejí, nežnou ani neshromažďují do stodol, a přesto je váš nebeský Otec živí. Nejste snad mnohem cennější než oni?"],[27,"Kdo z vás může svou starostí prodloužit svůj život byť jen o jediný loket?"],[28,"A proč si děláte starosti o oděv? Podívejte se na polní květiny, jak rostou. Nepracují ani nepředou."],[29,"A přesto vám říkám, že ani Šalomoun v celé své slávě nebyl oblečen jako jedna z nich."],[30,"Jestliže Bůh tak obléká polní trávu, která dnes je a zítra se hodí do pece, neobleče tím spíš vás, lidé malé víry?"],[31,"Nedělejte si tedy starosti a neříkejte: Co budeme jíst? Co budeme pít? Co si oblečeme?"],[32,"Po tom všem se shánějí pohané. Váš nebeský Otec přece ví, že to všechno potřebujete."],[33,"Hledejte nejprve Boží království a jeho spravedlnost, a všechno ostatní vám bude přidáno."],[34,"Nedělejte si tedy starosti o zítřek. Zítřek bude mít své vlastní starosti. Každý den má dost svého trápení."]]}];
+MATTHEW_SECTIONS[7] = [{"title":"Nesuďte","range":"Mt 7,1–6","thoughts":[],"verses":[[1,"Nesuďte, abyste nebyli souzeni."],[2,"Jakým soudem soudíte, takovým budete souzeni; a jakou mírou měříte, takovou bude naměřeno i vám."],[3,"Proč vidíš třísku v oku svého bratra, ale trámu ve vlastním oku si nevšímáš?"],[4,"Jak můžeš říct svému bratru: Dovol, ať ti vyjmu třísku z oka, když máš sám v oku trám?"],[5,"Pokrytče, nejprve vyjmi trám ze svého oka. Potom uvidíš jasně a budeš moci vyjmout třísku z oka svého bratra."],[6,"Nedávejte to, co je svaté, psům a neházejte své perly před prasata, aby je nepošlapala a potom se neobrátila proti vám."]]},{"title":"Proste, hledejte, tlučte","range":"Mt 7,7–12","thoughts":[],"verses":[[7,"Proste, a bude vám dáno. Hledejte, a naleznete. Tlučte, a bude vám otevřeno."],[8,"Každý, kdo prosí, dostává; kdo hledá, nalézá; a tomu, kdo tluče, bude otevřeno."],[9,"Kdo z vás by dal svému synovi kámen, kdyby ho prosil o chléb?"],[10,"Nebo kdyby prosil o rybu, dal by mu hada?"],[11,"Jestliže tedy vy, ačkoli jste zlí, umíte dávat svým dětem dobré dary, tím spíš váš Otec v nebesích dá dobré věci těm, kdo ho prosí."],[12,"Všechno, co chcete, aby lidé dělali vám, dělejte i vy jim. V tom je Zákon i Proroci."]]},{"title":"Úzká brána","range":"Mt 7,13–14","thoughts":[],"verses":[[13,"Vcházejte úzkou branou. Široká je brána a prostorná cesta, která vede do záhuby, a mnoho lidí po ní jde."],[14,"Úzká je však brána a těsná cesta, která vede k životu, a málo je těch, kdo ji nalézají."]]},{"title":"Strom se pozná po ovoci","range":"Mt 7,15–20","thoughts":[],"verses":[[15,"Dávejte si pozor na falešné proroky. Přicházejí k vám v ovčím rouchu, ale uvnitř jsou draví vlci."],[16,"Poznáte je podle jejich ovoce. Sbírají se snad hrozny z trní nebo fíky z bodláčí?"],[17,"Každý dobrý strom nese dobré ovoce, ale špatný strom nese špatné ovoce."],[18,"Dobrý strom nemůže nést špatné ovoce a špatný strom nemůže nést dobré ovoce."],[19,"Každý strom, který nenese dobré ovoce, je vyťat a hozen do ohně."],[20,"Proto je poznáte podle jejich ovoce."]]},{"title":"Ne každý, kdo říká: Pane, Pane","range":"Mt 7,21–23","thoughts":[],"verses":[[21,"Ne každý, kdo mi říká: Pane, Pane, vejde do nebeského království, ale ten, kdo koná vůli mého Otce v nebesích."],[22,"Mnozí mi v onen den řeknou: Pane, Pane, copak jsme ve tvém jménu neprorokovali, ve tvém jménu nevyháněli démony a ve tvém jménu nekonali mnoho mocných činů?"],[23,"Tehdy jim řeknu otevřeně: Nikdy jsem vás neznal. Odejděte ode mě, vy, kdo pácháte nepravost."]]},{"title":"Dům na skále","range":"Mt 7,24–29","thoughts":[],"verses":[[24,"Každý, kdo slyší tato má slova a plní je, podobá se moudrému muži, který postavil svůj dům na skále."],[25,"Spustil se déšť, přivalily se vody, zvedly se větry a udeřily na ten dům, ale nespadl, protože měl základy na skále."],[26,"Každý, kdo slyší tato má slova a neplní je, podobá se nerozumnému muži, který postavil svůj dům na písku."],[27,"Spustil se déšť, přivalily se vody, zvedly se větry a udeřily na ten dům. Ten spadl a jeho pád byl veliký."],[28,"Když Ježíš dokončil tato slova, zástupy žasly nad jeho učením,"],[29,"protože je učil jako ten, kdo má autoritu, a ne jako jejich učitelé Zákona."]]}];
+MATTHEW_SECTIONS[8] = [{"title":"Uzdravení malomocného","range":"Mt 8,1–4","thoughts":[],"verses":[[1,"Když Ježíš sestoupil z hory, šly za ním veliké zástupy."],[2,"Tu k němu přišel malomocný, poklonil se mu a řekl: „Pane, jestli chceš, můžeš mě očistit.“"],[3,"Ježíš vztáhl ruku, dotkl se ho a řekl: „Chci. Buď čistý.“ A jeho malomocenství bylo okamžitě očištěno."],[4,"Ježíš mu řekl: „Nikomu o tom neříkej. Jdi, ukaž se knězi a přines oběť, kterou přikázal Mojžíš, na svědectví pro ně.“"]]},{"title":"Víra setníka","range":"Mt 8,5–13","thoughts":[],"verses":[[5,"Když Ježíš vstoupil do Kafarnaum, přišel k němu setník a prosil ho:"],[6,"„Pane, můj služebník leží doma ochrnutý a velmi trpí.“"],[7,"Ježíš mu řekl: „Přijdu a uzdravím ho.“"],[8,"Setník odpověděl: „Pane, nejsem hoden, abys vešel pod mou střechu. Jen řekni slovo, a můj služebník bude uzdraven.“"],[9,"„Vždyť i já podléhám autoritě a mám pod sebou vojáky. Řeknu jednomu: Jdi, a jde; jinému: Přijď, a přijde; svému služebníkovi: Udělej to, a udělá.“"],[10,"Když to Ježíš uslyšel, podivil se a řekl těm, kdo šli za ním: „Amen, říkám vám: Tak velikou víru jsem nenašel ani v Izraeli.“"],[11,"„Říkám vám, že mnozí přijdou od východu i západu a budou stolovat s Abrahamem, Izákem a Jákobem v nebeském království,“"],[12,"„ale synové království budou vyhozeni ven do tmy. Tam bude pláč a skřípění zubů.“"],[13,"Potom Ježíš řekl setníkovi: „Jdi. Ať se ti stane, jak jsi uvěřil.“ A jeho služebník byl v tu chvíli uzdraven."]]},{"title":"Uzdravení v Petrově domě","range":"Mt 8,14–17","thoughts":[],"verses":[[14,"Ježíš přišel do Petrova domu a uviděl jeho tchyni ležet v horečce."],[15,"Dotkl se její ruky, horečka ji opustila, ona vstala a začala jim sloužit."],[16,"Když nastal večer, přivedli k němu mnoho posedlých. On slovem vyháněl duchy a uzdravil všechny nemocné,"],[17,"aby se naplnilo, co bylo řečeno skrze proroka Izaiáše: „On vzal na sebe naše slabosti a nesl naše nemoci.“"]]},{"title":"Následování Ježíše","range":"Mt 8,18–22","thoughts":[],"verses":[[18,"Když Ježíš uviděl kolem sebe zástupy, přikázal přeplavit se na druhou stranu."],[19,"Přišel k němu jeden učitel Zákona a řekl: „Mistře, půjdu za tebou, kamkoli půjdeš.“"],[20,"Ježíš mu odpověděl: „Lišky mají doupata a nebeští ptáci hnízda, ale Syn člověka nemá, kde by hlavu složil.“"],[21,"Jiný z jeho učedníků mu řekl: „Pane, dovol mi nejprve odejít a pochovat svého otce.“"],[22,"Ježíš mu řekl: „Následuj mě a nech mrtvé, ať pochovávají své mrtvé.“"]]},{"title":"Utišení bouře","range":"Mt 8,23–27","thoughts":[],"verses":[[23,"Ježíš nastoupil na loď a jeho učedníci šli s ním."],[24,"Na jezeře se náhle strhla veliká bouře, takže vlny zaplavovaly loď. Ježíš však spal."],[25,"Učedníci k němu přišli, probudili ho a volali: „Pane, zachraň nás, hyneme!“"],[26,"Řekl jim: „Proč se bojíte, lidé malé víry?“ Potom vstal, pohrozil větrům i jezeru a nastalo veliké ticho."],[27,"Lidé žasli a říkali: „Kdo to je, že ho poslouchají i větry a jezero?“"]]},{"title":"Dva posedlí v krajině Gergesenů","range":"Mt 8,28–34","thoughts":[],"verses":[[28,"Když se Ježíš dostal na druhý břeh do krajiny Gergesenů, vyšli mu vstříc dva posedlí, kteří vycházeli z hrobů. Byli tak nebezpeční, že tou cestou nikdo nemohl procházet."],[29,"Začali křičet: „Co je ti po nás, Ježíši, Synu Boží? Přišel jsi nás trápit dřív, než nastal čas?“"],[30,"Nedaleko od nich se páslo veliké stádo prasat."],[31,"Démoni ho prosili: „Jestli nás vyháníš, dovol nám vejít do toho stáda prasat.“"],[32,"Řekl jim: „Jděte.“ Oni vyšli a vešli do prasat. Celé stádo se pak prudce vrhlo ze svahu do jezera a ve vodě zahynulo."],[33,"Pasáci utekli do města a všechno tam vyprávěli, včetně toho, co se stalo posedlým."],[34,"Celé město vyšlo Ježíšovi naproti. Když ho uviděli, prosili ho, aby z jejich kraje odešel."]]}];
+MATTHEW_SECTIONS[9] = [{"title":"Uzdravení ochrnutého a odpuštění hříchů","range":"Mt 9,1–8","thoughts":[],"verses":[[1,"Ježíš nastoupil na loď, přeplavil se a přišel do svého města."],[2,"Přinesli k němu ochrnutého člověka ležícího na lůžku. Když Ježíš viděl jejich víru, řekl ochrnutému: „Buď dobré mysli, synu. Tvé hříchy jsou ti odpuštěny.“"],[3,"Někteří učitelé Zákona si pomysleli: „Ten člověk se rouhá.“"],[4,"Ježíš znal jejich myšlenky a řekl: „Proč ve svých srdcích myslíte na zlé?“"],[5,"„Co je snazší říct: Tvé hříchy jsou ti odpuštěny, nebo: Vstaň a choď?“"],[6,"„Abyste však věděli, že Syn člověka má na zemi moc odpouštět hříchy…“ Potom řekl ochrnutému: „Vstaň, vezmi své lůžko a jdi domů.“"],[7,"On vstal a odešel domů."],[8,"Když to zástupy viděly, žasly a oslavovaly Boha, který dal lidem takovou moc."]]},{"title":"Povolání Matouše","range":"Mt 9,9–13","thoughts":[],"verses":[[9,"Když Ježíš odcházel, uviděl člověka jménem Matouš sedět v celnici. Řekl mu: „Následuj mě.“ Matouš vstal a šel za ním."],[10,"Když potom Ježíš seděl v domě u stolu, přišlo mnoho celníků a hříšníků a jedli s ním a s jeho učedníky."],[11,"Když to viděli farizeové, řekli jeho učedníkům: „Proč váš učitel jí s celníky a hříšníky?“"],[12,"Ježíš to uslyšel a řekl: „Lékaře nepotřebují zdraví, ale nemocní.“"],[13,"„Jděte a naučte se, co znamená: Milosrdenství chci, ne oběť. Nepřišel jsem totiž volat spravedlivé, ale hříšníky k pokání.“"]]},{"title":"Otázka půstu","range":"Mt 9,14–17","thoughts":[],"verses":[[14,"Potom k němu přišli Janovi učedníci a ptali se: „Proč se my i farizeové často postíme, ale tvoji učedníci se nepostí?“"],[15,"Ježíš jim řekl: „Mohou se svatební hosté rmoutit, dokud je ženich s nimi? Přijdou však dny, kdy jim bude ženich vzat, a tehdy se budou postit.“"],[16,"Nikdo nepřišívá záplatu z nového sukna na starý oděv. Nová záplata by látku stáhla a díra by se ještě zvětšila."],[17,"Ani se nové víno nelije do starých měchů. Jinak měchy prasknou, víno se vylije a měchy se zničí. Nové víno se lije do nových měchů, a tak se zachová obojí."]]},{"title":"Dívka a nemocná žena","range":"Mt 9,18–26","thoughts":[],"verses":[[18,"Když k nim Ježíš takto mluvil, přišel jeden představený, poklonil se mu a řekl: „Moje dcera právě zemřela. Ale pojď, vlož na ni ruku a bude žít.“"],[19,"Ježíš vstal a šel za ním spolu se svými učedníky."],[20,"Tu k němu zezadu přistoupila žena, která dvanáct let trpěla krvácením, a dotkla se okraje jeho oděvu."],[21,"Říkala si totiž: „Jestli se jen dotknu jeho oděvu, budu uzdravena.“"],[22,"Ježíš se otočil, uviděl ji a řekl: „Buď dobré mysli, dcero. Tvá víra tě uzdravila.“ A od té chvíle byla žena zdravá."],[23,"Když Ježíš přišel do domu představeného a uviděl hudebníky a hlučící zástup,"],[24,"řekl: „Odejděte. Ta dívka nezemřela, ale spí.“ Oni se mu vysmívali."],[25,"Když zástup vyvedli ven, Ježíš vešel dovnitř, vzal dívku za ruku a ona vstala."],[26,"Zpráva o tom se rozšířila po celém tom kraji."]]},{"title":"Uzdravení dvou slepých","range":"Mt 9,27–31","thoughts":[],"verses":[[27,"Když Ježíš odcházel, šli za ním dva slepí a volali: „Smiluj se nad námi, Synu Davidův!“"],[28,"Když vešel do domu, slepí k němu přišli. Ježíš se jich zeptal: „Věříte, že to mohu udělat?“ Odpověděli: „Ano, Pane.“"],[29,"Potom se dotkl jejich očí a řekl: „Ať se vám stane podle vaší víry.“"],[30,"Jejich oči se otevřely. Ježíš je přísně varoval: „Dejte pozor, ať se o tom nikdo nedozví.“"],[31,"Oni však odešli a rozšířili zprávu o něm po celém kraji."]]},{"title":"Uzdravení němého","range":"Mt 9,32–34","thoughts":[],"verses":[[32,"Když odcházeli, přivedli k Ježíšovi němého člověka posedlého démonem."],[33,"Když byl démon vyhnán, němý začal mluvit. Zástupy žasly a říkaly: „Něco takového ještě nikdy v Izraeli vidět nebylo.“"],[34,"Farizeové však říkali: „Démony vyhání mocí vládce démonů.“"]]},{"title":"Žeň je veliká","range":"Mt 9,35–38","thoughts":[],"verses":[[35,"Ježíš procházel všechna města a vesnice, učil v jejich synagogách, hlásal evangelium o království a uzdravoval každou nemoc a každý neduh."],[36,"Když viděl zástupy, bylo mu jich líto, protože byli unavení a rozptýlení jako ovce bez pastýře."],[37,"Tehdy řekl svým učedníkům: „Žeň je veliká, ale dělníků je málo.“"],[38,"„Proste proto Pána žně, aby poslal dělníky na svou žeň.“"]]}];
+MATTHEW_SECTIONS[10] = [{"title":"Dvanáct apoštolů","range":"Mt 10,1–4","thoughts":[],"verses":[[1,"Ježíš svolal svých dvanáct učedníků a dal jim moc nad nečistými duchy, aby je vyháněli, a moc uzdravovat každou nemoc a každý neduh."],[2,"Jména dvanácti apoštolů jsou tato: první Šimon, nazývaný Petr, a jeho bratr Ondřej; Jakub, syn Zebedeův, a jeho bratr Jan;"],[3,"Filip a Bartoloměj; Tomáš a celník Matouš; Jakub, syn Alfeův, a Lebbeus zvaný Tadeáš;"],[4,"Šimon Kananejský a Jidáš Iškariotský, který ho později zradil."]]},{"title":"Vyslání Dvanácti","range":"Mt 10,5–15","thoughts":[],"verses":[[5,"Těchto dvanáct Ježíš poslal a přikázal jim: „Nevydávejte se k pohanům a nevcházejte do samařských měst.“"],[6,"„Jděte raději ke ztraceným ovcím z domu Izraele.“"],[7,"„Cestou kažte: Přiblížilo se nebeské království.“"],[8,"„Uzdravujte nemocné, očišťujte malomocné, křiste mrtvé a vyhánějte démony. Zadarmo jste dostali, zadarmo dávejte.“"],[9,"„Neberte si do opasků zlato, stříbro ani peníze,“"],[10,"„ani brašnu na cestu, ani dvě košile, obuv navíc nebo hůl. Dělník si totiž zaslouží svůj pokrm.“"],[11,"„Když přijdete do nějakého města nebo vesnice, zjistěte, kdo je tam spolehlivý, a u něho zůstaňte, dokud neodejdete.“"],[12,"„Když vstoupíte do domu, pozdravte ho.“"],[13,"„Jestliže si ten dům zaslouží pokoj, ať na něj váš pokoj spočine. Jestliže ne, ať se váš pokoj vrátí k vám.“"],[14,"„Kdo vás nepřijme a nebude poslouchat vaše slova, odejděte z toho domu nebo města a setřeste prach ze svých nohou.“"],[15,"„Amen, říkám vám: Sodomě a Gomoře bude v den soudu snesitelněji než tomu městu.“"]]},{"title":"Ovce mezi vlky","range":"Mt 10,16–23","thoughts":[],"verses":[[16,"„Posílám vás jako ovce mezi vlky. Buďte proto obezřetní jako hadi a nevinní jako holubice.“"],[17,"„Dávejte si pozor na lidi. Budou vás vydávat soudům a ve svých synagogách vás budou bičovat.“"],[18,"„Kvůli mně vás budou vodit před vládce i krále, abyste vydali svědectví jim i národům.“"],[19,"„Když vás vydají, nedělejte si starosti, jak nebo co budete mluvit. V tu chvíli vám bude dáno, co máte říct.“"],[20,"„Nebudete totiž mluvit jen vy, ale Duch vašeho Otce bude mluvit ve vás.“"],[21,"„Bratr vydá na smrt bratra a otec dítě. Děti povstanou proti rodičům a budou je usmrcovat.“"],[22,"„Kvůli mému jménu vás budou všichni nenávidět. Kdo však vytrvá až do konce, bude zachráněn.“"],[23,"„Když vás budou pronásledovat v jednom městě, utečte do jiného. Amen, říkám vám: Nestačíte projít izraelská města, než přijde Syn člověka.“"]]},{"title":"Nebojte se","range":"Mt 10,24–33","thoughts":[],"verses":[[24,"„Učedník není nad svého učitele ani služebník nad svého pána.“"],[25,"„Učedníkovi stačí, když je jako jeho učitel, a služebníkovi, když je jako jeho pán. Jestliže nazvali pána domu Belzebubem, tím spíš tak budou nazývat jeho domácí.“"],[26,"„Nebojte se jich. Není nic skrytého, co nebude odhaleno, ani nic tajného, co nebude poznáno.“"],[27,"„Co vám říkám ve tmě, říkejte na světle; a co slyšíte do ucha, hlásejte ze střech.“"],[28,"„Nebojte se těch, kdo zabíjejí tělo, ale duši zabít nemohou. Spíš mějte bázeň před tím, který může zahubit duši i tělo v pekle.“"],[29,"„Neprodávají se dva vrabci za drobnou minci? A přece ani jeden z nich nepadne na zem bez vědomí vašeho Otce.“"],[30,"„U vás jsou spočítány dokonce i všechny vlasy na hlavě.“"],[31,"„Nebojte se tedy. Máte větší cenu než mnoho vrabců.“"],[32,"„Každého, kdo se ke mně přizná před lidmi, i já vyznám před svým Otcem v nebesích.“"],[33,"„Kdo mě však před lidmi zapře, toho i já zapřu před svým Otcem v nebesích.“"]]},{"title":"Ježíš přináší rozhodnutí","range":"Mt 10,34–39","thoughts":[],"verses":[[34,"„Nemyslete si, že jsem přišel přinést na zem pokoj. Nepřišel jsem přinést pokoj, ale meč.“"],[35,"„Přišel jsem postavit syna proti otci, dceru proti matce a snachu proti tchyni.“"],[36,"„Nepřáteli člověka se stanou lidé z jeho vlastního domu.“"],[37,"„Kdo miluje otce nebo matku víc než mě, není mě hoden. A kdo miluje syna nebo dceru víc než mě, není mě hoden.“"],[38,"„Kdo nebere svůj kříž a nenásleduje mě, není mě hoden.“"],[39,"„Kdo najde svůj život, ztratí ho; a kdo svůj život ztratí kvůli mně, najde ho.“"]]},{"title":"Kdo vás přijímá, přijímá mě","range":"Mt 10,40–42","thoughts":[],"verses":[[40,"„Kdo přijímá vás, přijímá mě; a kdo přijímá mě, přijímá toho, který mě poslal.“"],[41,"„Kdo přijme proroka proto, že je prorok, dostane odměnu proroka. A kdo přijme spravedlivého proto, že je spravedlivý, dostane odměnu spravedlivého.“"],[42,"„A kdo podá jednomu z těchto maličkých třeba jen pohár studené vody proto, že je mým učedníkem, amen, říkám vám: Nepřijde o svou odměnu.“"]]}];
+
+const VERSE_QUOTES = {
+  "5:4":"„Ježíš tady neslibuje pohodový život. Mluví o životě, který je pravdivý.“",
+  "5:11":"„Ne každá bolest je prohra. Některé bolesti jsou důkazem, že jsi nezradil sám sebe.“",
+  "5:12":"„Radost tady není pocit. Je to odmítnutí přijmout logiku světa, že když něco bolí, tak to bylo špatně.“"
+};
+
+let selectedBook="MAT", selectedChapter=5;
+
+function showView(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));
+  document.querySelectorAll(".topnav button[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
+}
+document.querySelectorAll(".topnav button[data-view]").forEach(b=>b.onclick=()=>showView(b.dataset.view));
+
+const themeToggle=document.getElementById("themeToggle");
+function applyTheme(mode){
+  const dark=mode==="dark";
+  document.body.classList.toggle("dark",dark);
+  themeToggle.textContent=dark ? "☀ Světlý režim" : "☾ Tmavý režim";
+}
+const savedTheme=localStorage.getItem("evangelium_theme");
+applyTheme(savedTheme || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+themeToggle.onclick=()=>{
+  const next=document.body.classList.contains("dark") ? "light" : "dark";
+  localStorage.setItem("evangelium_theme",next);
+  applyTheme(next);
+};
+
+
+function renderBookTree(){
+  const host=document.getElementById("bookList");
+  host.innerHTML="";
+  Object.entries(BOOKS).forEach(([id,b])=>{
+    const row=document.createElement("div");
+    row.className="book-row";
+
+    const btn=document.createElement("button");
+    btn.className="book-btn"+(id===selectedBook?" active":"");
+    btn.textContent=b.name;
+    btn.onclick=()=>{
+      if(id!==selectedBook) selectedChapter=1;
+      selectedBook=id;
+      renderBookTree();
+      renderBible();
+    };
+    row.appendChild(btn);
+
+    const chapters=document.createElement("div");
+    chapters.className="chapters"+(id===selectedBook?" open":"");
+    for(let i=1;i<=b.chapters;i++){
+      const c=document.createElement("button");
+      c.className="chapter-btn"+(id===selectedBook && i===selectedChapter?" active":"");
+      c.textContent=i;
+      c.onclick=()=>{
+        selectedBook=id; selectedChapter=i;
+        renderBookTree(); renderBible();
+      };
+      chapters.appendChild(c);
+    }
+    row.appendChild(chapters);
+    host.appendChild(row);
+  });
+}
+
+function openThought(id){
+  currentCycle="A";
+  document.querySelectorAll(".cycle-btn").forEach(x=>x.classList.toggle("active",x.dataset.cycle==="A"));
+  showView("archiveView");
+  renderSundayList();
+  renderSunday("A-04-ordinary-2026",id);
+}
+
+function wireChapterInteractions(main){
+  main.querySelectorAll("[data-inline-thought]").forEach(btn=>{
+    btn.onclick=()=>{
+      const id=btn.dataset.inlineThought;
+      const box=main.querySelector("#inline-"+id);
+      const wasOpen=box.classList.contains("open");
+      main.querySelectorAll(".passage-thought-expanded").forEach(x=>x.classList.remove("open"));
+      main.querySelectorAll("[data-inline-thought]").forEach(x=>x.classList.remove("active"));
+      if(!wasOpen){
+        box.classList.add("open");
+        btn.classList.add("active");
+      }
+    };
+  });
+
+  main.querySelectorAll("[data-verse-note]").forEach(btn=>{
+    btn.onclick=()=>{
+      const box=main.querySelector("#"+btn.dataset.verseNote);
+      box.classList.toggle("open");
+      btn.setAttribute("aria-expanded", box.classList.contains("open") ? "true" : "false");
+    };
+  });
+}
+
+function renderBible(){
+  const main=document.getElementById("bibleMain");
+  const b=BOOKS[selectedBook];
+
+  if(selectedBook==="MAT" && MATTHEW_SECTIONS[selectedChapter]){
+    const sections=MATTHEW_SECTIONS[selectedChapter];
+    main.innerHTML=`
+      <div class="eyebrow">Evangelium podle Matouše</div>
+      <h2>${selectedChapter}. kapitola</h2>
+      <div class="source-note">Pracovní modernizované české znění podle Bible kralické. Cílem je věrné a srozumitelné znění v současné češtině, nikoli odborný nový překlad z řečtiny.</div>
+
+      ${sections.map(section=>`
+        <section class="passage">
+          <div class="passage-title">${section.title} · ${section.range}</div>
+
+          ${section.thoughts.length ? `
+          <div class="passage-thoughts">
+            <strong>Myšlenky k tomuto úryvku</strong>
+            <div class="thought-links">
+              ${section.thoughts.map((id,i)=>`<button class="thought-link" data-inline-thought="${id}">Myšlenka ${i+1}</button>`).join("")}
+            </div>
+            ${section.thoughts.map(id=>{
+              const t=THOUGHTS[id];
+              return `<div class="passage-thought-expanded" id="inline-${id}">
+                <h4>${t.title}</h4>
+                ${t.paragraphs.map(p=>`<p>${p}</p>`).join("")}
+              </div>`;
+            }).join("")}
+          </div>` : ""}
+
+          <div class="verse-flow">
+            ${section.verses.map(([n,t])=>{
+              const q=VERSE_QUOTES[`${selectedChapter}:${n}`];
+              return `
+                <span class="verse-inline"><sup class="verse-number">${n}</sup>${t}${q?`<button class="verse-note-marker" data-verse-note="verse-note-${selectedChapter}-${n}" title="Zobrazit myšlenku k verši" aria-expanded="false">✦</button>`:""} </span>
+                ${q?`<span class="verse-quote" id="verse-note-${selectedChapter}-${n}">${q}</span>`:""}
+              `;
+            }).join("")}
+          </div>
+        </section>
+      `).join("")}
+
+      <nav class="chapter-nav" aria-label="Navigace mezi kapitolami">
+        <button id="prevChapter" ${selectedChapter<=1?"disabled":""}>← Předchozí kapitola</button>
+        <button id="nextChapter" ${selectedChapter>=b.chapters?"disabled":""}>Další kapitola →</button>
+      </nav>
+    `;
+    wireChapterInteractions(main);
+    const prev=main.querySelector("#prevChapter");
+    const next=main.querySelector("#nextChapter");
+    if(prev) prev.onclick=()=>{
+      if(selectedChapter>1){
+        selectedChapter--;
+        renderBookTree();
+        renderBible();
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
+    };
+    if(next) next.onclick=()=>{
+      if(selectedChapter<b.chapters){
+        selectedChapter++;
+        renderBookTree();
+        renderBible();
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
+    };
+  } else {
+    main.innerHTML=`
+      <div class="eyebrow">Evangelium podle ${b.name}</div>
+      <h2>${selectedChapter}. kapitola</h2>
+      <div class="placeholder">
+        Tato kapitola je zatím připravená ve struktuře aplikace, ale její modernizované znění ještě není vložené.
+      </div>
+      <nav class="chapter-nav" aria-label="Navigace mezi kapitolami">
+        <button id="prevChapter" ${selectedChapter<=1?"disabled":""}>← Předchozí kapitola</button>
+        <button id="nextChapter" ${selectedChapter>=b.chapters?"disabled":""}>Další kapitola →</button>
+      </nav>`;
+    const prev=main.querySelector("#prevChapter");
+    const next=main.querySelector("#nextChapter");
+    if(prev) prev.onclick=()=>{
+      if(selectedChapter>1){
+        selectedChapter--;
+        renderBookTree();
+        renderBible();
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
+    };
+    if(next) next.onclick=()=>{
+      if(selectedChapter<b.chapters){
+        selectedChapter++;
+        renderBookTree();
+        renderBible();
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
+    };
+  }
+}
+
+let currentCycle="A";
+function renderSundayList(){
+  const list=document.getElementById("sundayList");
+  const entries=SUNDAYS[currentCycle];
+  if(!entries.length){
+    list.innerHTML='<div class="empty-cycle">V tomto cyklu zatím nejsou přidané žádné neděle.</div>';
+    document.getElementById("archiveMain").innerHTML='<div class="placeholder">Vyber jiný cyklus nebo později přidej další přepis.</div>';
+    return;
+  }
+  list.innerHTML=entries.map((s,i)=>`
+    <button class="sunday-item ${i===0?"active":""}" data-sunday="${s.id}">
+      <strong>${s.title}</strong>
+      <span>${s.date} · ${s.gospel}</span>
+    </button>`).join("");
+  list.querySelectorAll(".sunday-item").forEach(btn=>btn.onclick=()=>{
+    list.querySelectorAll(".sunday-item").forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
+    renderSunday(btn.dataset.sunday);
+  });
+  renderSunday(entries[0].id);
+}
+
+function renderSunday(id, scrollThought=null){
+  const s=Object.values(SUNDAYS).flat().find(x=>x.id===id);
+  if(!s)return;
+  const main=document.getElementById("archiveMain");
+  main.innerHTML=`
+    <div class="sunday-head">
+      <div class="eyebrow">Cyklus ${currentCycle}</div>
+      <h2>${s.title}</h2>
+      <div class="sunday-meta">
+        <span class="pill">${s.date}</span>
+        <span class="pill">${s.gospel}</span>
+        <span class="pill">Libor Všetula</span>
+      </div>
+    </div>
+
+    <section class="video-panel">
+      <h3>Video</h3>
+      <div class="video-wrap">
+        <iframe
+          id="videoFrame"
+          src="https://www.youtube-nocookie.com/embed/9lovWV1zMtI"
+          title="Libor Všetula – myšlenky k evangeliu"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe>
+      </div>
+    </section>
+
+    <section class="transcript-section">
+      <h3>Úvod</h3>
+      <p>${s.intro}</p>
+    </section>
+
+    ${s.thoughtIds.map(tid=>{
+      const t=THOUGHTS[tid];
+      return `<section class="transcript-section" id="archive-${tid}">
+        <div class="timecode">${t.time}</div>
+        <h3>${t.title}</h3>
+        ${t.paragraphs.map(p=>`<p>${p}</p>`).join("")}
+      </section>`;
+    }).join("")}
+
+    <section class="transcript-section">
+      <h3>Závěr</h3>
+      <p>${s.conclusion}</p>
+    </section>
+
+    <div class="editorial">
+      Přepis je redakčně vyčištěný podle dodaných titulků: odstraněna je slovní vata, opakování,
+      přeřeknutí a organizační závěr. Smysl jednotlivých myšlenek zůstává zachovaný.
+    </div>
+  `;
+
+  if(scrollThought){
+    requestAnimationFrame(()=>document.getElementById("archive-"+scrollThought)?.scrollIntoView({behavior:"smooth",block:"start"}));
+  }
+}
+
+document.querySelectorAll(".cycle-btn").forEach(btn=>btn.onclick=()=>{
+  currentCycle=btn.dataset.cycle;
+  document.querySelectorAll(".cycle-btn").forEach(x=>x.classList.toggle("active",x===btn));
+  renderSundayList();
+});
+
+renderBookTree();
+renderBible();
+renderSundayList();
+</script>
+</body>
+</html>
