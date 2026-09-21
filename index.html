@@ -308,6 +308,7 @@ body.dark .passage-video-expanded{background:#28231c;border-color:#5a4934}
 <script src="data/matous.js"></script>
 <script src="data/marek.js"></script>
 <script src="data/lukas.js"></script>
+<script src="data/jan.js"></script>
 <script>
 const BOOKS = {
   MAT:{name:"Matouš", short:"Mt", chapters:28},
@@ -480,7 +481,7 @@ function renderBible(){
   const main=document.getElementById("bibleMain");
   const b=BOOKS[selectedBook];
 
-  const sectionMap = selectedBook==="MAT" ? MATTHEW_SECTIONS : (selectedBook==="MRK" ? MARK_SECTIONS : (selectedBook==="LUK" ? LUKE_SECTIONS : null));
+  const sectionMap = selectedBook==="MAT" ? MATTHEW_SECTIONS : (selectedBook==="MRK" ? MARK_SECTIONS : (selectedBook==="LUK" ? LUKE_SECTIONS : (selectedBook==="JHN" ? JOHN_SECTIONS : null)));
   if(sectionMap && sectionMap[selectedChapter]){
     const sections=sectionMap[selectedChapter];
     main.innerHTML=`
