@@ -249,6 +249,9 @@ body.dark .video-wrap{background:#111}
 .passage-video-expanded.open{display:block}
 .passage-video-expanded .video-wrap{margin:0}
 body.dark .passage-video-expanded{background:#28231c;border-color:#5a4934}
+.sunday-period-btn{background:#f1e7d7}
+body.dark .sunday-period-btn{background:#30291f}
+
 @media(max-width:650px){.theme-toggle-fixed{top:9px;right:9px;padding:8px 10px;font-size:13px}header{padding-top:38px}}
 
 
@@ -532,7 +535,7 @@ function renderBible(){
             return vids.length ? `
           <div class="passage-thoughts">
             <div class="thought-links">
-              ${vids.map(v=>`<button class="thought-link" data-inline-video="${v.id}">▶ ${v.title}</button>`).join("")}
+              ${vids.map(v=>`<button class="thought-link" data-inline-video="${v.id}">▶ Tři myšlenky k ${v.title.toLowerCase()}</button>`).join("")}
             </div>
             ${vids.map(v=>`<div class="passage-video-expanded" data-video-panel="${v.id}"><div class="video-wrap" data-video-src="${v.videoEmbed}"></div></div>`).join("")}
           </div>` : "";
