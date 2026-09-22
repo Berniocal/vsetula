@@ -92,6 +92,14 @@ header p{margin:0;color:var(--muted)}
 .cycles{display:flex;gap:7px;margin-bottom:18px}
 .cycle-btn{padding:7px 13px}
 .sunday-list{display:grid;gap:9px}
+.sunday-period{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--paper)}
+.sunday-period + .sunday-period{margin-top:10px}
+.sunday-period-btn{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;background:var(--paper);padding:11px 12px;cursor:pointer;font-weight:800;text-align:left}
+.sunday-period-btn::after{content:"▾";transition:transform .18s ease}
+.sunday-period.closed .sunday-period-btn::after{transform:rotate(-90deg)}
+.sunday-period-items{display:grid;gap:7px;padding:0 8px 8px}
+.sunday-period.closed .sunday-period-items{display:none}
+
 .sunday-item{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px;cursor:pointer}
 .sunday-item.active{background:var(--soft);border-color:#c9ae82}
 .sunday-item strong{display:block}
@@ -209,7 +217,8 @@ body.dark .topnav button,
 body.dark .chapter-nav button,
 body.dark .theme-toggle,
 body.dark .video-tools input,
-body.dark .video-tools button{
+body.dark .video-tools button,
+body.dark .sunday-period-btn{
   background:var(--paper);
   color:var(--ink);
   border-color:var(--line);
@@ -269,15 +278,15 @@ body.dark .passage-video-expanded{background:#28231c;border-color:#5a4934}
 
 <header>
   <h1>Myšlenky k evangeliu</h1>
-  <p>Evangelia propojená s videi k jednotlivým nedělím.</p>
+  <p>Evangelia propojená s videi Libora Všetuly</p>
 </header>
 
 <nav class="topnav">
-  <button class="active" data-view="gospelView">Evangelia</button>
-  <button data-view="archiveView">Neděle</button>
+  <button data-view="gospelView">Evangelia</button>
+  <button class="active" data-view="archiveView">Neděle</button>
 </nav>
 
-<section id="gospelView" class="view active">
+<section id="gospelView" class="view">
   <div class="bible-layout">
     <aside class="card bible-nav">
       <h2>Evangelia</h2>
@@ -287,7 +296,7 @@ body.dark .passage-video-expanded{background:#28231c;border-color:#5a4934}
   </div>
 </section>
 
-<section id="archiveView" class="view">
+<section id="archiveView" class="view active">
   <div class="archive-layout">
     <aside class="card archive-side">
       <h2>Neděle</h2>
@@ -311,10 +320,10 @@ body.dark .passage-video-expanded{background:#28231c;border-color:#5a4934}
 <script src="data/jan.js"></script>
 <script>
 const BOOKS = {
-  MAT:{name:"Matouš", short:"Mt", chapters:28},
-  MRK:{name:"Marek", short:"Mk", chapters:16},
-  LUK:{name:"Lukáš", short:"Lk", chapters:24},
-  JHN:{name:"Jan", short:"Jan", chapters:21}
+  MAT:{name:"Matouš", genitive:"Matouše", short:"Mt", chapters:28},
+  MRK:{name:"Marek", genitive:"Marka", short:"Mk", chapters:16},
+  LUK:{name:"Lukáš", genitive:"Lukáše", short:"Lk", chapters:24},
+  JHN:{name:"Jan", genitive:"Jana", short:"Jan", chapters:21}
 };
 
 const SUNDAYS = {
@@ -366,13 +375,32 @@ function videosForSection(book,chapter,section){
   });
 }
 
-let selectedBook="MAT", selectedChapter=5;
+function sundayPeriod(s){
+  if(s.id.includes("-lent-")) return "Postní doba";
+  if(s.id.includes("-palm-")) return "Svatý týden";
+  if(s.id.includes("-easter-") || s.id.includes("-ascension-") || s.id.includes("-pentecost-")) return "Velikonoční doba";
+  return "Mezidobí";
+}
+
+function latestSunday(entries){
+  return entries.length ? entries[entries.length-1] : null;
+}
+
+let selectedBook="MAT", selectedChapter=1;
 
 function showView(id){
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));
   document.querySelectorAll(".topnav button[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
 }
-document.querySelectorAll(".topnav button[data-view]").forEach(b=>b.onclick=()=>showView(b.dataset.view));
+document.querySelectorAll(".topnav button[data-view]").forEach(b=>b.onclick=()=>{
+  if(b.dataset.view==="gospelView"){
+    selectedBook="MAT";
+    selectedChapter=1;
+    renderBookTree();
+    renderBible();
+  }
+  showView(b.dataset.view);
+});
 
 const themeToggle=document.getElementById("themeToggle");
 function applyTheme(mode){
@@ -466,9 +494,9 @@ function renderBible(){
   if(sectionMap && sectionMap[selectedChapter]){
     const sections=sectionMap[selectedChapter];
     main.innerHTML=`
-      <div class="eyebrow">Evangelium podle ${b.name}</div>
+      <div class="eyebrow">Evangelium podle ${b.genitive}</div>
       <h2>${selectedChapter}. kapitola</h2>
-      <div class="source-note">Pracovní modernizované české znění podle Bible kralické. Cílem je věrné a srozumitelné znění v současné češtině, nikoli odborný nový překlad z řečtiny.</div>
+      <div class="source-note">Modernizované české znění podle Bible kralické.</div>
 
       ${sections.map(section=>`
         <section class="passage">
@@ -523,7 +551,7 @@ function renderBible(){
     };
   } else {
     main.innerHTML=`
-      <div class="eyebrow">Evangelium podle ${b.name}</div>
+      <div class="eyebrow">Evangelium podle ${b.genitive}</div>
       <h2>${selectedChapter}. kapitola</h2>
       <div class="placeholder">
         Tato kapitola je zatím připravená ve struktuře aplikace, ale její modernizované znění ještě není vložené.
@@ -554,7 +582,7 @@ function renderBible(){
 }
 
 let currentCycle="A";
-function renderSundayList(){
+function renderSundayList(selectedId=null){
   const list=document.getElementById("sundayList");
   const entries=SUNDAYS[currentCycle];
   if(!entries.length){
@@ -562,17 +590,33 @@ function renderSundayList(){
     document.getElementById("archiveMain").innerHTML='<div class="placeholder">Vyber jiný cyklus nebo později přidej další přepis.</div>';
     return;
   }
-  list.innerHTML=entries.map((s,i)=>`
-    <button class="sunday-item ${i===0?"active":""}" data-sunday="${s.id}">
-      <strong>${s.title}</strong>
-      <span>${s.date} · ${s.gospel}</span>
-    </button>`).join("");
+
+  const selected=entries.find(x=>x.id===selectedId) || latestSunday(entries);
+  const openPeriod=sundayPeriod(selected);
+  const order=["Mezidobí","Postní doba","Svatý týden","Velikonoční doba"];
+  const groups=Object.groupBy ? Object.groupBy(entries,sundayPeriod) : entries.reduce((acc,s)=>((acc[sundayPeriod(s)] ||= []).push(s),acc),{});
+
+  list.innerHTML=order.filter(period=>groups[period]?.length).map(period=>`
+    <div class="sunday-period ${period===openPeriod?"":"closed"}" data-period="${period}">
+      <button class="sunday-period-btn" type="button">${period}</button>
+      <div class="sunday-period-items">
+        ${groups[period].map(s=>`
+          <button class="sunday-item ${s.id===selected.id?"active":""}" data-sunday="${s.id}">
+            <strong>${s.title}</strong>
+            <span>${s.date} · ${s.gospel}</span>
+          </button>`).join("")}
+      </div>
+    </div>`).join("");
+
+  list.querySelectorAll(".sunday-period-btn").forEach(btn=>btn.onclick=()=>{
+    btn.closest(".sunday-period").classList.toggle("closed");
+  });
   list.querySelectorAll(".sunday-item").forEach(btn=>btn.onclick=()=>{
     list.querySelectorAll(".sunday-item").forEach(x=>x.classList.remove("active"));
     btn.classList.add("active");
     renderSunday(btn.dataset.sunday);
   });
-  renderSunday(entries[0].id);
+  renderSunday(selected.id);
 }
 
 function gospelExcerpt(ref){
@@ -608,7 +652,7 @@ document.querySelectorAll(".cycle-btn").forEach(btn=>btn.onclick=()=>{
 
 renderBookTree();
 renderBible();
-renderSundayList();
+renderSundayList(latestSunday(SUNDAYS[currentCycle])?.id);
 </script>
 </body>
 </html>
