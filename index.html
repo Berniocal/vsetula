@@ -323,10 +323,7 @@ const SUNDAYS = {
     title:"4. neděle v mezidobí",
     date:"1. 2. 2026",
     gospel:"Mt 5,1–12",
-    intro:"Máme před sebou čtvrtou neděli v mezidobí. Pojďme na evangelium této neděle. Je to známé evangelium o blahoslavenství, Matoušova pátá kapitola.",
-    thoughtIds:["thought1","thought2","thought3"],
-    conclusion:"Tenhle úryvek není úplně jednoduchý. Často se do něj vkrádají klišé. Myslím, že nás vede hlouběji do toho, co znamená život s Kristem a opravdové srdce učedníků.",
-    videoEmbed:"https://youtu.be/9lovWV1zMtI?is=Mj6sGVcyEP1zyPWa"
+    videoEmbed:"https://www.youtube-nocookie.com/embed/9lovWV1zMtI"
   }],
   B:[],
   C:[]
@@ -516,61 +513,23 @@ function renderSundayList(){
   renderSunday(entries[0].id);
 }
 
-function renderSunday(id, scrollThought=null){
+function gospelExcerpt(ref){
+  const match=ref.match(/^(Mt|Mk|Lk|Jan)\s+(\d+),(\d+)[–-](\d+)$/);
+  if(!match)return "";
+  const key={Mt:"MAT",Mk:"MRK",Lk:"LUK",Jan:"JHN"}[match[1]];
+  const maps={MAT:MATTHEW_SECTIONS,MRK:MARK_SECTIONS,LUK:LUKE_SECTIONS,JHN:JOHN_SECTIONS};
+  const verses=(maps[key][Number(match[2])]||[]).flatMap(section=>section.verses);
+  const from=Number(match[3]),to=Number(match[4]);
+  return verses.filter(([n])=>n>=from&&n<=to).map(([n,t])=>'<span class="verse-inline"><sup class="verse-number">'+n+'</sup>'+t+' </span>').join("");
+}
+
+function renderSunday(id){
   const s=Object.values(SUNDAYS).flat().find(x=>x.id===id);
   if(!s)return;
-  const main=document.getElementById("archiveMain");
-  main.innerHTML=`
-    <div class="sunday-head">
-      <div class="eyebrow">Cyklus ${currentCycle}</div>
-      <h2>${s.title}</h2>
-      <div class="sunday-meta">
-        <span class="pill">${s.date}</span>
-        <span class="pill">${s.gospel}</span>
-        <span class="pill">Libor Všetula</span>
-      </div>
-    </div>
-
-    <section class="video-panel">
-      <h3>Video</h3>
-      <div class="video-wrap">
-        <iframe
-          id="videoFrame"
-          src="https://www.youtube-nocookie.com/embed/9lovWV1zMtI"
-          title="Libor Všetula – myšlenky k evangeliu"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen></iframe>
-      </div>
-    </section>
-
-    <section class="transcript-section">
-      <h3>Úvod</h3>
-      <p>${s.intro}</p>
-    </section>
-
-    ${s.thoughtIds.map(tid=>{
-      const t=THOUGHTS[tid];
-      return `<section class="transcript-section" id="archive-${tid}">
-        <div class="timecode">${t.time}</div>
-        <h3>${t.title}</h3>
-        ${t.paragraphs.map(p=>`<p>${p}</p>`).join("")}
-      </section>`;
-    }).join("")}
-
-    <section class="transcript-section">
-      <h3>Závěr</h3>
-      <p>${s.conclusion}</p>
-    </section>
-
-    <div class="editorial">
-      Přepis je redakčně vyčištěný podle dodaných titulků: odstraněna je slovní vata, opakování,
-      přeřeknutí a organizační závěr. Smysl jednotlivých myšlenek zůstává zachovaný.
-    </div>
-  `;
-
-  if(scrollThought){
-    requestAnimationFrame(()=>document.getElementById("archive-"+scrollThought)?.scrollIntoView({behavior:"smooth",block:"start"}));
-  }
+  document.getElementById("archiveMain").innerHTML=
+    '<div class="sunday-head"><div class="eyebrow">Cyklus '+currentCycle+'</div><h2>'+s.title+'</h2><div class="sunday-meta"><span class="pill">'+s.date+'</span><span class="pill">'+s.gospel+'</span></div></div>'+
+    '<section class="transcript-section"><h3>Evangelium · '+s.gospel+'</h3><div class="verse-flow">'+gospelExcerpt(s.gospel)+'</div></section>'+
+    '<section class="video-panel"><h3>Video s myšlenkami</h3><div class="video-wrap"><iframe src="'+s.videoEmbed+'" title="Video s myšlenkami k evangeliu" allowfullscreen></iframe></div></section>';
 }
 
 document.querySelectorAll(".cycle-btn").forEach(btn=>btn.onclick=()=>{
