@@ -390,43 +390,12 @@ function renderBookTree(){
   });
 }
 
-function openThought(id){
-  currentCycle="A";
-  document.querySelectorAll(".cycle-btn").forEach(x=>x.classList.toggle("active",x.dataset.cycle==="A"));
-  showView("archiveView");
-  renderSundayList();
-  renderSunday("A-04-ordinary-2026",id);
-}
-
 function wireChapterInteractions(main){
-  const closePassageExtras=()=>{
-    main.querySelectorAll(".passage-thought-expanded,.passage-video-expanded").forEach(x=>x.classList.remove("open"));
-    main.querySelectorAll("[data-inline-thought],[data-inline-video]").forEach(x=>x.classList.remove("active"));
-  };
-
-  main.querySelectorAll("[data-inline-thought]").forEach(btn=>{
-    btn.onclick=()=>{
-      const box=main.querySelector("#inline-"+btn.dataset.inlineThought);
-      const wasOpen=box.classList.contains("open");
-      closePassageExtras();
-      if(!wasOpen){ box.classList.add("open"); btn.classList.add("active"); }
-    };
-  });
-
   main.querySelectorAll("[data-inline-video]").forEach(btn=>{
     btn.onclick=()=>{
-      const box=main.querySelector("#inline-passage-video");
-      const wasOpen=box.classList.contains("open");
-      closePassageExtras();
-      if(!wasOpen){ box.classList.add("open"); btn.classList.add("active"); }
-    };
-  });
-
-  main.querySelectorAll("[data-verse-note]").forEach(btn=>{
-    btn.onclick=()=>{
-      const box=main.querySelector("#"+btn.dataset.verseNote);
-      box.classList.toggle("open");
-      btn.setAttribute("aria-expanded", box.classList.contains("open") ? "true" : "false");
+      const box=btn.closest(".passage").querySelector(".passage-video-expanded");
+      const open=box.classList.toggle("open");
+      btn.classList.toggle("active",open);
     };
   });
 }
@@ -455,29 +424,11 @@ function renderBible(){
           <div class="passage-title">${section.title} · ${section.range}</div>
 
           ${section.thoughts.length ? `
-          <div class="passage-thoughts">
-            <strong>Myšlenky k tomuto úryvku</strong>
-            <div class="thought-links">
-              ${section.thoughts.map((id,i)=>`<button class="thought-link" data-inline-thought="${id}">Myšlenka ${i+1}</button>`).join("")}
-              <button class="thought-link" data-inline-video="true">Video</button>
-            </div>
-            ${section.thoughts.map(id=>{
-              const t=THOUGHTS[id];
-              return `<div class="passage-thought-expanded" id="inline-${id}">
-                <h4>${t.title}</h4>
-                ${t.paragraphs.map(p=>`<p>${p}</p>`).join("")}
-              </div>`;
-            }).join("")}
-            <div class="passage-video-expanded" id="inline-passage-video">
-              <div class="video-wrap">
-                <iframe src="https://www.youtube-nocookie.com/embed/9lovWV1zMtI" title="Libor Všetula – myšlenky k evangeliu" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-              </div>
-            </div>
-          </div>` : ""}
+          <div class="passage-thoughts"><div class="thought-links"><button class="thought-link" data-inline-video="true">▶ Video s myšlenkami</button></div><div class="passage-video-expanded"><div class="video-wrap"><iframe src="https://www.youtube-nocookie.com/embed/9lovWV1zMtI" title="Video s myšlenkami k evangeliu" allowfullscreen></iframe></div></div></div>` : ""}
 
           <div class="verse-flow">
             ${section.verses.map(([n,t])=>{
-              const q=selectedBook==="MAT" ? VERSE_QUOTES[`${selectedChapter}:${n}`] : null;
+              const q=null;
               return `
                 <span class="verse-inline"><sup class="verse-number">${n}</sup>${t}${q?`<button class="verse-note-marker" data-verse-note="verse-note-${selectedChapter}-${n}" title="Zobrazit myšlenku k verši" aria-expanded="false">✦</button>`:""} </span>
                 ${q?`<span class="verse-quote" id="verse-note-${selectedChapter}-${n}">${q}</span>`:""}
