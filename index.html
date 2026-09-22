@@ -94,7 +94,8 @@ header p{margin:0;color:var(--muted)}
 .sunday-list{display:grid;gap:9px}
 .sunday-period{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--paper)}
 .sunday-period + .sunday-period{margin-top:10px}
-.sunday-period-btn{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;background:var(--paper);padding:11px 12px;cursor:pointer;font-weight:800;text-align:left}
+.sunday-period-btn{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;background:var(--soft);padding:11px 12px;cursor:pointer;font-weight:800;text-align:left}
+.sunday-period-btn:hover{filter:brightness(.97)}
 .sunday-period-btn::after{content:"▾";transition:transform .18s ease}
 .sunday-period.closed .sunday-period-btn::after{transform:rotate(-90deg)}
 .sunday-period-items{display:grid;gap:7px;padding:0 8px 8px}
@@ -666,7 +667,7 @@ function renderSunday(id){
   if(!s)return;
   currentSundayId=id;
   document.getElementById("archiveMain").innerHTML=
-    '<div class="sunday-head"><div class="eyebrow">Cyklus '+currentCycle+'</div><h2>'+s.title+'</h2><div class="sunday-meta"><span class="pill">'+s.date+'</span><span class="pill">'+s.gospel+'</span></div></div>'+
+    '<div class="sunday-head"><div class="eyebrow">Cyklus '+currentCycle+'</div><h2>Tři myšlenky k '+s.title.toLowerCase()+'</h2><div class="sunday-meta"><span class="pill">'+s.date+'</span><span class="pill">'+s.gospel+'</span></div></div>'+
     '<section class="transcript-section"><h3>Evangelium · '+s.gospel+'</h3><div class="verse-flow">'+gospelExcerpt(s.gospel)+'</div></section>'+
     '<section class="video-panel"><h3>Video s myšlenkami</h3><div class="video-wrap"><iframe src="'+s.videoEmbed+'" title="Video s myšlenkami k evangeliu" allowfullscreen></iframe></div></section>';
 }
