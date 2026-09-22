@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Myšlenky k evangeliu</title>
+<title>Tři myšlenky k evangeliu</title>
 <style>
 :root{
   --bg:#f5f2eb; --paper:#fffdf9; --ink:#25211c; --muted:#756e64;
@@ -277,7 +277,7 @@ body.dark .passage-video-expanded{background:#28231c;border-color:#5a4934}
 <button class="theme-toggle theme-toggle-fixed" id="themeToggle" type="button">☾ Tmavý režim</button>
 
 <header>
-  <h1>Myšlenky k evangeliu</h1>
+  <h1>Tři myšlenky k evangeliu</h1>
   <p>Evangelia propojená s videi Libora Všetuly</p>
 </header>
 
@@ -379,7 +379,12 @@ function sundayPeriod(s){
   if(s.id.includes("-lent-")) return "Postní doba";
   if(s.id.includes("-palm-")) return "Svatý týden";
   if(s.id.includes("-easter-") || s.id.includes("-ascension-") || s.id.includes("-pentecost-")) return "Velikonoční doba";
-  return "Mezidobí";
+  if(s.id.includes("-ordinary-")){
+    const m=s.id.match(/A-(\d+)-ordinary/);
+    const n=m ? Number(m[1]) : 99;
+    return n<=9 ? "Mezidobí po Vánocích" : "Mezidobí po Velikonocích";
+  }
+  return "Mezidobí po Velikonocích";
 }
 
 function latestSunday(entries){
@@ -387,18 +392,37 @@ function latestSunday(entries){
 }
 
 let selectedBook="MAT", selectedChapter=1;
+let currentSundayId=null;
 
 function showView(id){
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));
   document.querySelectorAll(".topnav button[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
 }
-document.querySelectorAll(".topnav button[data-view]").forEach(b=>b.onclick=()=>{
-  if(b.dataset.view==="gospelView"){
+function openCurrentSundayGospel(){
+  const sunday=Object.values(SUNDAYS).flat().find(x=>x.id===currentSundayId) || latestSunday(SUNDAYS[currentCycle]);
+  const ref=sunday ? parseGospelRef(sunday.gospel) : null;
+  if(ref){
+    selectedBook=ref.book;
+    selectedChapter=ref.startChapter;
+  }else{
     selectedBook="MAT";
     selectedChapter=1;
-    renderBookTree();
-    renderBible();
   }
+  renderBookTree();
+  renderBible();
+  if(ref){
+    requestAnimationFrame(()=>{
+      const sectionMap=ref.book==="MAT"?MATTHEW_SECTIONS:ref.book==="MRK"?MARK_SECTIONS:ref.book==="LUK"?LUKE_SECTIONS:JOHN_SECTIONS;
+      const sections=sectionMap[ref.startChapter]||[];
+      const index=sections.findIndex(section=>section.verses.some(([n])=>n===ref.startVerse));
+      const passages=document.querySelectorAll("#bibleMain .passage");
+      if(index>=0 && passages[index]) passages[index].scrollIntoView({behavior:"smooth",block:"start"});
+    });
+  }
+}
+
+document.querySelectorAll(".topnav button[data-view]").forEach(b=>b.onclick=()=>{
+  if(b.dataset.view==="gospelView") openCurrentSundayGospel();
   showView(b.dataset.view);
 });
 
@@ -592,8 +616,9 @@ function renderSundayList(selectedId=null){
   }
 
   const selected=entries.find(x=>x.id===selectedId) || latestSunday(entries);
+  currentSundayId=selected.id;
   const openPeriod=sundayPeriod(selected);
-  const order=["Mezidobí","Postní doba","Svatý týden","Velikonoční doba"];
+  const order=["Mezidobí po Vánocích","Postní doba","Svatý týden","Velikonoční doba","Mezidobí po Velikonocích"];
   const groups=Object.groupBy ? Object.groupBy(entries,sundayPeriod) : entries.reduce((acc,s)=>((acc[sundayPeriod(s)] ||= []).push(s),acc),{});
 
   list.innerHTML=order.filter(period=>groups[period]?.length).map(period=>`
@@ -614,6 +639,7 @@ function renderSundayList(selectedId=null){
   list.querySelectorAll(".sunday-item").forEach(btn=>btn.onclick=()=>{
     list.querySelectorAll(".sunday-item").forEach(x=>x.classList.remove("active"));
     btn.classList.add("active");
+    currentSundayId=btn.dataset.sunday;
     renderSunday(btn.dataset.sunday);
   });
   renderSunday(selected.id);
@@ -638,6 +664,7 @@ function gospelExcerpt(ref){
 function renderSunday(id){
   const s=Object.values(SUNDAYS).flat().find(x=>x.id===id);
   if(!s)return;
+  currentSundayId=id;
   document.getElementById("archiveMain").innerHTML=
     '<div class="sunday-head"><div class="eyebrow">Cyklus '+currentCycle+'</div><h2>'+s.title+'</h2><div class="sunday-meta"><span class="pill">'+s.date+'</span><span class="pill">'+s.gospel+'</span></div></div>'+
     '<section class="transcript-section"><h3>Evangelium · '+s.gospel+'</h3><div class="verse-flow">'+gospelExcerpt(s.gospel)+'</div></section>'+
