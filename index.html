@@ -269,12 +269,12 @@ body.dark .passage-video-expanded{background:#28231c;border-color:#5a4934}
 
 <header>
   <h1>Myšlenky k evangeliu</h1>
-  <p>Evangelia propojená s vyčištěnými přepisy jednotlivých neděl.</p>
+  <p>Evangelia propojená s videi k jednotlivým nedělím.</p>
 </header>
 
 <nav class="topnav">
   <button class="active" data-view="gospelView">Evangelia</button>
-  <button data-view="archiveView">Myšlenky k evangeliu</button>
+  <button data-view="archiveView">Neděle</button>
 </nav>
 
 <section id="gospelView" class="view active">
@@ -290,7 +290,7 @@ body.dark .passage-video-expanded{background:#28231c;border-color:#5a4934}
 <section id="archiveView" class="view">
   <div class="archive-layout">
     <aside class="card archive-side">
-      <h2>Myšlenky k evangeliu</h2>
+      <h2>Neděle</h2>
       <div class="cycles">
         <button class="cycle-btn active" data-cycle="A">Cyklus A</button>
         <button class="cycle-btn" data-cycle="B">Cyklus B</button>
@@ -317,39 +317,6 @@ const BOOKS = {
   JHN:{name:"Jan", short:"Jan", chapters:21}
 };
 
-const THOUGHTS = {
-  thought1:{
-    title:"Myšlenka první",
-    time:"00:22–01:16",
-    paragraphs:[
-      "Někdy jsou chvíle, kdy si v tichu položíš docela surovou otázku: Stálo mi to za to? Třeba mlčet, když by bylo jednodušší něco říct nebo si ulevit; zůstat, když jiní odešli; nebo nést něco, co se zdá být nad moje síly.",
-      "A do toho Ježíš řekne větu, která zní skoro necitlivě: „Radujte se a jásejte, protože máte v nebi velkou odměnu.“ Neříká: „Bude to spravedlivé“ nebo „Pochopí tě“, ale: „Neztratí se to.“",
-      "Radost tady není pocit. Je to odmítnutí přijmout logiku světa, že když něco bolí, tak to bylo špatně. Ne každá bolest je prohra. Některé bolesti jsou důkazem, že jsi nezradil sám sebe."
-    ]
-  },
-  thought2:{
-    title:"Myšlenka druhá",
-    time:"01:18–02:45",
-    paragraphs:[
-      "Blahoslavenství většinou čteme tak, že se v nich mají poznat lidé, kterým je těžko: ti, co pláčou, nemají sílu nebo něco nezvládli. Jenže velká část našeho života taková není. Většinu času prostě žijeme. Ráno vstaneme, jdeme do práce, řešíme běžné věci a večer jsme unavení. Není to euforie, ale život obvykle není katastrofa a jsme relativně v klidu.",
-      "A právě tehdy se zdá, že blahoslavenství mluví o někom jiném. Ježíš tady ale nepopisuje extrémní stavy. Popisuje to, co se s člověkem postupně začne dít, když je Bohu blízko.",
-      "Najednou tě víc rozhodí nespravedlnost, i když se tě přímo netýká. Když jsi Bohu blíž, už nedokážeš přejít cizí bolest mávnutím ruky. Všimneš si věcí, které bys dřív označil za něco, co není tvoje starost. A klid, který ti byl dřív příjemný, ti začne připadat podezřele laciný.",
-      "Není to proto, že bys byl slabší. Je to proto, že jsi pozornější. Blahoslavenství nejsou vstupní podmínky víry. Jsou to stopy, podle kterých poznáš, že jdeš Bohu naproti."
-    ]
-  },
-  thought3:{
-    title:"Myšlenka třetí",
-    time:"02:45–04:05",
-    paragraphs:[
-      "Když se modlíme, většinou chceme, aby byl klid, aby se věci srovnaly a aby to moc nebolelo. Chceme mít pokoj v hlavě, ve vztazích i v životě. To je pochopitelné.",
-      "Ježíš tady ale neslibuje pohodový život. Mluví o životě, který je pravdivý. Říká: „Blahoslaveni plačící“ a „blahoslaveni pronásledovaní“. To nejsou stavy, které by si někdo přál.",
-      "Jsou to chvíle, kdy si musíme ujasnit jednu důležitou věc: jestli si člověk hlavně pohlídá, aby měl klid, nebo jestli zůstane poctivý k sobě i k druhým.",
-      "Někdy je jednodušší mlčet. Někdy je jednodušší ustoupit. Někdy je jednodušší dělat, že se nic neděje. Blahoslavenství nejsou útěcha před bolestí. Potichu připomínají, že klid za každou cenu není totéž co dobrý život.",
-      "Víra, která tě nikdy nezraní, tě taky nikdy nezmění."
-    ]
-  }
-};
-
 const SUNDAYS = {
   A:[{
     id:"A-04-ordinary-2026",
@@ -363,12 +330,6 @@ const SUNDAYS = {
   }],
   B:[],
   C:[]
-};
-
-const VERSE_QUOTES = {
-  "5:4":"„Ježíš tady neslibuje pohodový život. Mluví o životě, který je pravdivý.“",
-  "5:11":"„Ne každá bolest je prohra. Některé bolesti jsou důkazem, že jsi nezradil sám sebe.“",
-  "5:12":"„Radost tady není pocit. Je to odmítnutí přijmout logiku světa, že když něco bolí, tak to bylo špatně.“"
 };
 
 let selectedBook="MAT", selectedChapter=5;
