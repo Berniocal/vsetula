@@ -359,7 +359,8 @@ const SUNDAYS = {
     {id:"A-22-ordinary-2026",title:"22. neděle v mezidobí",date:"30. 8. 2026",gospel:"Mt 16,21–27",videoEmbed:"https://www.youtube-nocookie.com/embed/8jU6H8MEajY"},
     {id:"A-23-ordinary-2026",title:"23. neděle v mezidobí",date:"6. 9. 2026",gospel:"Mt 18,15–20",videoEmbed:"https://www.youtube-nocookie.com/embed/Wsue9JpsbO8"},
     {id:"A-24-ordinary-2026",title:"24. neděle v mezidobí",date:"13. 9. 2026",gospel:"Mt 18,21–35",videoEmbed:"https://www.youtube-nocookie.com/embed/ETQBvR3W5fE"},
-    {id:"A-25-ordinary-2026",title:"25. neděle v mezidobí",date:"20. 9. 2026",gospel:"Mt 20,1–16",videoEmbed:"https://www.youtube-nocookie.com/embed/EN0qPFUdZUo"}
+    {id:"A-25-ordinary-2026",title:"25. neděle v mezidobí",date:"20. 9. 2026",gospel:"Mt 20,1–16",videoEmbed:"https://www.youtube-nocookie.com/embed/EN0qPFUdZUo"},
+    {id:"A-26-ordinary-2026",title:"26. neděle v mezidobí",date:"27. 9. 2026",gospel:"Mt 21,28–32",videoEmbed:"https://www.youtube-nocookie.com/embed/i2uFLY-jg64"}
   ],
   B:[],
   C:[]
@@ -393,6 +394,15 @@ function sundayPeriod(s){
 
 function latestSunday(entries){
   return entries.length ? entries[entries.length-1] : null;
+}
+
+function sundayThoughtLabel(title){
+  if(/^\d+\.\s+neděle/.test(title)){
+    return "Tři myšlenky k " + title.toLowerCase().replace(/\bneděle\b/g,"neděli");
+  }
+  if(title==="Květná neděle") return "Tři myšlenky ke Květné neděli";
+  if(title.startsWith("Slavnost ")) return "Tři myšlenky ke " + title.replace(/^Slavnost /,"slavnosti ");
+  return "Tři myšlenky k " + title.toLowerCase();
 }
 
 let selectedBook="MAT", selectedChapter=1;
@@ -535,7 +545,7 @@ function renderBible(){
             return vids.length ? `
           <div class="passage-thoughts">
             <div class="thought-links">
-              ${vids.map(v=>`<button class="thought-link" data-inline-video="${v.id}">▶ Tři myšlenky k ${v.title.toLowerCase()}</button>`).join("")}
+              ${vids.map(v=>`<button class="thought-link" data-inline-video="${v.id}">▶ ${sundayThoughtLabel(v.title)}</button>`).join("")}
             </div>
             ${vids.map(v=>`<div class="passage-video-expanded" data-video-panel="${v.id}"><div class="video-wrap" data-video-src="${v.videoEmbed}"></div></div>`).join("")}
           </div>` : "";
@@ -670,7 +680,7 @@ function renderSunday(id){
   if(!s)return;
   currentSundayId=id;
   document.getElementById("archiveMain").innerHTML=
-    '<div class="sunday-head"><div class="eyebrow">Cyklus '+currentCycle+'</div><h2>Tři myšlenky k '+s.title.toLowerCase()+'</h2><div class="sunday-meta"><span class="pill">'+s.date+'</span><span class="pill">'+s.gospel+'</span></div></div>'+
+    '<div class="sunday-head"><div class="eyebrow">Cyklus '+currentCycle+'</div><h2>'+sundayThoughtLabel(s.title)+'</h2><div class="sunday-meta"><span class="pill">'+s.date+'</span><span class="pill">'+s.gospel+'</span></div></div>'+
     '<section class="transcript-section"><h3>Evangelium · '+s.gospel+'</h3><div class="verse-flow">'+gospelExcerpt(s.gospel)+'</div></section>'+
     '<section class="video-panel"><h3>Video s myšlenkami</h3><div class="video-wrap"><iframe src="'+s.videoEmbed+'" title="Video s myšlenkami k evangeliu" allowfullscreen></iframe></div></section>';
 }
